@@ -1,0 +1,21 @@
+# Build outputs
+**/bin/
+**/obj/
+*.exe
+*.pdb
+
+# NuGet packages
+packages/
+
+# IDE
+.vs/
+.reasonix/
+
+# Temp files
+*.user
+*.suo
+*.sln.docstates
+Thumbs.db
+
+# Design doc backup
+PROGRESS_REPORT.md
