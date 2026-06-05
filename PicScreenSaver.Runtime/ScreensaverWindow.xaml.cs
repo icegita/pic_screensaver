@@ -43,7 +43,7 @@ namespace PicScreenSaver.Runtime
 
         private void SetupFullscreen()
         {
-            WindowState = WindowState.Maximized;
+            WindowState = WindowState.Normal;
             WindowStyle = WindowStyle.None;
             ResizeMode = ResizeMode.NoResize;
             Background = System.Windows.Media.Brushes.Black;
@@ -51,10 +51,11 @@ namespace PicScreenSaver.Runtime
             Topmost = true;
             Cursor = Cursors.None;
 
-            Left = 0;
-            Top = 0;
-            Width = SystemParameters.PrimaryScreenWidth;
-            Height = SystemParameters.PrimaryScreenHeight;
+            var workArea = SystemParameters.WorkArea;
+            Left = workArea.Left;
+            Top = workArea.Top;
+            Width = workArea.Width;
+            Height = workArea.Height;
         }
 
         private void SetupPreviewStyle()

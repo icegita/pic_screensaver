@@ -69,7 +69,7 @@ namespace PicScreenSaver.Runtime
                     Content = effect,
                     Tag = effect,
                     IsChecked = _selectedEffects.Contains(effect),
-                    Margin = new Thickness(0, 0, 0, 2),
+                    Margin = new Thickness(0, 0, 0, 0),
                     Cursor = System.Windows.Input.Cursors.Hand,
                     Foreground = new SolidColorBrush(TextColor),
                     FontSize = 12,
@@ -159,6 +159,7 @@ namespace PicScreenSaver.Runtime
 
                 if (proc.ExitCode == 0)
                 {
+                    SetScreensaverRegistry(destPath);
                     InstallBtn.Visibility = Visibility.Collapsed;
                     Close();
                 }
@@ -171,6 +172,19 @@ namespace PicScreenSaver.Runtime
             {
                 MessageBox.Show($"安装失败：{ex.Message}");
             }
+        }
+
+        private static void SetScreensaverRegistry(string scrPath)
+        {
+            try
+            {
+                using (var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Control Panel\Desktop", true))
+                {
+                    if (key != null)
+                        key.SetValue("SCRNSAVE.EXE", scrPath, Microsoft.Win32.RegistryValueKind.String);
+                }
+            }
+            catch { }
         }
 
         private void OkButton_Click(object sender, RoutedEventArgs e)

@@ -1,7 +1,7 @@
 <Window x:Class="PicScreenSaver.Maker.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="PicScreenSaver" Width="900" Height="730"
+        Title="PicScreenSaver" Width="900" Height="680"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource BgBrush}"
         WindowStyle="None"
@@ -14,7 +14,7 @@
         <Style x:Key="TabRadioStyle" TargetType="RadioButton">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="{DynamicResource Text2Brush}"/>
-            <Setter Property="BorderThickness" Value="0,0,0,2"/>
+            <Setter Property="BorderThickness" Value="0,0,0,4"/>
             <Setter Property="BorderBrush" Value="Transparent"/>
             <Setter Property="Padding" Value="16,0"/>
             <Setter Property="Height" Value="42"/>
@@ -51,7 +51,7 @@
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Margin" Value="0,0,0,1"/>
+            <Setter Property="Margin" Value="0,0,0,0"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="CheckBox">
@@ -67,7 +67,7 @@
                                            HorizontalAlignment="Center" VerticalAlignment="Center"
                                            Visibility="Collapsed"/>
                             </Border>
-                            <ContentPresenter Grid.Column="1" VerticalAlignment="Center" Margin="0,7,16,7"/>
+                            <ContentPresenter Grid.Column="1" VerticalAlignment="Center" Margin="0,3,16,3"/>
                         </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsChecked" Value="True">
@@ -184,9 +184,19 @@
         </Grid.RowDefinitions>
         <Canvas x:Name="DragOverlay" Panel.ZIndex="9999" IsHitTestVisible="False" Visibility="Collapsed"/>
 
+        <!-- Toast overlay -->
+        <Border x:Name="ToastOverlay" Grid.Row="2" Panel.ZIndex="10000"
+                HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,12,0,0"
+                Background="{DynamicResource AccentBrush}" CornerRadius="6"
+                Padding="16,8" Opacity="0" IsHitTestVisible="False"
+                Effect="{DynamicResource ToastShadow}">
+            <TextBlock x:Name="ToastText" Text="" FontSize="12" FontWeight="Medium"
+                       Foreground="White" FontFamily="Segoe UI"/>
+        </Border>
+
         <Border x:Name="TitleBarBg" Grid.Row="0" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1">
             <Grid>
-                <TextBlock Text="PicScreenSaver" HorizontalAlignment="Center" VerticalAlignment="Center"
+                <TextBlock x:Name="TitleText" Text="PicScreenSaver" HorizontalAlignment="Center" VerticalAlignment="Center"
                            FontSize="12.5" FontWeight="Medium" Foreground="{DynamicResource Text2Brush}" FontFamily="Segoe UI"/>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
                     <Button x:Name="ThemeToggleBtn" Width="36" Height="44"
@@ -232,11 +242,6 @@
                             Style="{StaticResource RoundedButtonStyle}" FontFamily="Segoe UI" Cursor="Hand" Margin="0,0,6,0"/>
                     <Button x:Name="SaveBtn" Content="&#x4FDD;&#x5B58;"
                             Click="SaveProject_Click"
-                            Background="{DynamicResource Surface2Brush}" Foreground="{DynamicResource Text2Brush}" BorderBrush="{DynamicResource BorderBrush}"
-                            BorderThickness="1" Padding="14,0" Height="30" FontSize="12"
-                            Style="{StaticResource RoundedButtonStyle}" FontFamily="Segoe UI" Cursor="Hand" Margin="0,0,6,0"/>
-                    <Button x:Name="DebugBtn" Content="&#x8C03;&#x8BD5;"
-                            Click="DebugBtn_Click"
                             Background="{DynamicResource Surface2Brush}" Foreground="{DynamicResource Text2Brush}" BorderBrush="{DynamicResource BorderBrush}"
                             BorderThickness="1" Padding="14,0" Height="30" FontSize="12"
                             Style="{StaticResource RoundedButtonStyle}" FontFamily="Segoe UI" Cursor="Hand" Margin="0,0,6,0"/>
@@ -546,7 +551,7 @@
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
-                                        <TextBox Grid.Column="0" x:Name="SaverNameInput" Text="MyScreensaver" Height="30"
+                                        <TextBox Grid.Column="0" x:Name="SaverNameInput" Text="PicScreenSaver" Height="30"
                                                  Background="{DynamicResource Surface2Brush}" Foreground="{DynamicResource TextBrush}"
                                                  BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1.5" FontFamily="Consolas"
                                                  FontSize="11" VerticalContentAlignment="Center" Padding="8,0"

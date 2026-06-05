@@ -47,7 +47,7 @@ namespace PicScreenSaver.Runtime.Engine.Transitions
         {
             var sb = new Storyboard();
             var time = TimeSpan.FromSeconds(duration);
-            double w = SystemParameters.PrimaryScreenWidth;
+            double w = SystemParameters.WorkArea.Width;
 
             incoming.RenderTransform = new TranslateTransform(w, 0);
             incoming.Opacity = 1.0;
@@ -66,7 +66,7 @@ namespace PicScreenSaver.Runtime.Engine.Transitions
         {
             var sb = new Storyboard();
             var time = TimeSpan.FromSeconds(duration);
-            double w = SystemParameters.PrimaryScreenWidth;
+            double w = SystemParameters.WorkArea.Width;
 
             incoming.RenderTransform = new TranslateTransform(-w, 0);
             incoming.Opacity = 1.0;
@@ -85,7 +85,7 @@ namespace PicScreenSaver.Runtime.Engine.Transitions
         {
             var sb = new Storyboard();
             var time = TimeSpan.FromSeconds(duration);
-            double h = SystemParameters.PrimaryScreenHeight;
+            double h = SystemParameters.WorkArea.Height;
 
             incoming.RenderTransform = new TranslateTransform(0, h);
             incoming.Opacity = 1.0;
@@ -104,7 +104,7 @@ namespace PicScreenSaver.Runtime.Engine.Transitions
         {
             var sb = new Storyboard();
             var time = TimeSpan.FromSeconds(duration);
-            double h = SystemParameters.PrimaryScreenHeight;
+            double h = SystemParameters.WorkArea.Height;
 
             incoming.RenderTransform = new TranslateTransform(0, -h);
             incoming.Opacity = 1.0;

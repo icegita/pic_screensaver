@@ -10,6 +10,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Themes/Light.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+            <DropShadowEffect x:Key="ToastShadow" BlurRadius="12" ShadowDepth="2" Color="#000000" Opacity="0.25"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

@@ -115,7 +115,7 @@ namespace PicScreenSaver.Runtime.Engine.Transitions
         {
             var sb = new Storyboard();
             var time = TimeSpan.FromSeconds(duration);
-            double w = SystemParameters.PrimaryScreenWidth;
+            double w = SystemParameters.WorkArea.Width;
 
             outgoing.RenderTransform = new TranslateTransform(0, 0);
             incoming.RenderTransform = new TranslateTransform(w, 0);
@@ -140,7 +140,7 @@ namespace PicScreenSaver.Runtime.Engine.Transitions
         {
             var sb = new Storyboard();
             var time = TimeSpan.FromSeconds(duration);
-            double h = SystemParameters.PrimaryScreenHeight;
+            double h = SystemParameters.WorkArea.Height;
 
             outgoing.RenderTransform = new TranslateTransform(0, 0);
             incoming.RenderTransform = new TranslateTransform(0, h);

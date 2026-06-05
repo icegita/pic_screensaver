@@ -9,6 +9,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 using Microsoft.Win32;
 using PicScreenSaver.Maker.Models;
 using PicScreenSaver.Maker.Services;
@@ -76,12 +77,49 @@ namespace PicScreenSaver.Maker
             ThemeColors.SetDark(false);
             _outputPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
             OutputPathInput.Text = _outputPath;
+            SaverNameInput.TextChanged += (s, e) => UpdateTitle();
+            UpdateTitle();
             InitializeEffectsList();
             InitializePreviewImages();
             UpdateEstimate();
             CreateSliderButtons();
             SetThemeIcon(_isDarkTheme);
             UpdateSliderButtons();
+        }
+
+        private void UpdateTitle()
+        {
+            string name = SaverNameInput.Text?.Trim();
+            TitleText.Text = string.IsNullOrEmpty(name) ? "PicScreenSaver" : name;
+        }
+
+        private DispatcherTimer _toastTimer;
+
+        private void ShowToast(string message, int durationMs = 2500)
+        {
+            ToastText.Text = message;
+            ToastOverlay.Opacity = 0;
+            ToastOverlay.Visibility = Visibility.Visible;
+
+            _toastTimer?.Stop();
+            _toastTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(10) };
+            _toastTimer.Tick += (s, e) =>
+            {
+                _toastTimer.Stop();
+                var fadeIn = new System.Windows.Media.Animation.DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(150));
+                ToastOverlay.BeginAnimation(UIElement.OpacityProperty, fadeIn);
+
+                var hideTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(durationMs) };
+                hideTimer.Tick += (s2, e2) =>
+                {
+                    hideTimer.Stop();
+                    var fadeOut = new System.Windows.Media.Animation.DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(300));
+                    fadeOut.Completed += (s3, e3) => ToastOverlay.Visibility = Visibility.Collapsed;
+                    ToastOverlay.BeginAnimation(UIElement.OpacityProperty, fadeOut);
+                };
+                hideTimer.Start();
+            };
+            _toastTimer.Start();
         }
 
         private void CreateSliderButtons()
@@ -900,13 +938,13 @@ namespace PicScreenSaver.Maker
 
         private void GenerateBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (_images.Count == 0) { MessageBox.Show("请先添加图片。", "提示", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
-            if (_selectedEffects.Count == 0) { MessageBox.Show("请至少选择一种过渡效果。", "提示", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
-            if (string.IsNullOrWhiteSpace(SaverNameInput.Text)) { MessageBox.Show("请输入屏保名称。", "提示", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
-            if (string.IsNullOrWhiteSpace(_outputPath) || !Directory.Exists(_outputPath)) { MessageBox.Show("请选择有效的输出路径。", "提示", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
+            if (_images.Count == 0) { ShowToast("请先添加图片"); return; }
+            if (_selectedEffects.Count == 0) { ShowToast("请至少选择一种过渡效果"); return; }
+            if (string.IsNullOrWhiteSpace(SaverNameInput.Text)) { ShowToast("请输入屏保名称"); return; }
+            if (string.IsNullOrWhiteSpace(_outputPath) || !Directory.Exists(_outputPath)) { ShowToast("请选择有效的输出路径"); return; }
 
             var runtimePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "PicScreenSaver.Runtime.exe");
-            if (!File.Exists(runtimePath)) { MessageBox.Show("找不到运行时模板文件 PicScreenSaver.Runtime.exe。\n请确保它与制作器在同一目录下。", "错误", MessageBoxButton.OK, MessageBoxImage.Error); return; }
+            if (!File.Exists(runtimePath)) { ShowToast("找不到运行时模板文件 PicScreenSaver.Runtime.exe"); return; }
 
             var runtimeTemplate = File.ReadAllBytes(runtimePath);
             var config = new ScreensaverConfig
@@ -929,10 +967,10 @@ namespace PicScreenSaver.Maker
             try
             {
                 _packageBuilder.BuildPackage(runtimeTemplate, config, _images, outputPath);
-                if (InstallYes.IsChecked == true) { InstallScreensaver(outputPath); MessageBox.Show($"屏保已生成并安装：\n{outputPath}", "成功", MessageBoxButton.OK, MessageBoxImage.Information); }
-                else MessageBox.Show($"屏保已生成：\n{outputPath}", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                if (InstallYes.IsChecked == true) { InstallScreensaver(outputPath); ShowToast($"屏保已生成并安装：{outputName}.scr"); }
+                else ShowToast($"屏保已生成：{outputName}.scr");
             }
-            catch (Exception ex) { MessageBox.Show($"生成失败：\n{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error); }
+            catch (Exception ex) { ShowToast($"生成失败：{ex.Message}", 4000); }
         }
 
         [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
@@ -957,12 +995,31 @@ namespace PicScreenSaver.Maker
                 };
                 var proc = System.Diagnostics.Process.Start(psi);
                 if (proc != null) proc.WaitForExit(15000);
+
+                SetScreensaverRegistry(destPath);
             }
             catch
             {
-                try { File.Copy(scrPath, destPath, true); }
+                try
+                {
+                    File.Copy(scrPath, destPath, true);
+                    SetScreensaverRegistry(destPath);
+                }
                 catch { }
             }
+        }
+
+        private static void SetScreensaverRegistry(string scrPath)
+        {
+            try
+            {
+                using (var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Control Panel\Desktop", true))
+                {
+                    if (key != null)
+                        key.SetValue("SCRNSAVE.EXE", scrPath, Microsoft.Win32.RegistryValueKind.String);
+                }
+            }
+            catch { }
         }
 
         private void OpenProject_Click(object sender, RoutedEventArgs e)
@@ -978,7 +1035,7 @@ namespace PicScreenSaver.Maker
             {
                 var json = File.ReadAllText(dialog.FileName);
                 var project = Newtonsoft.Json.JsonConvert.DeserializeObject<ProjectFile>(json);
-                if (project == null) { MessageBox.Show("项目文件格式无效。", "错误", MessageBoxButton.OK, MessageBoxImage.Error); return; }
+                if (project == null) { ShowToast("项目文件格式无效"); return; }
 
                 // 恢复设置参数
                 _displayDuration = project.DisplayDuration;
@@ -1025,34 +1082,8 @@ namespace PicScreenSaver.Maker
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"打开项目失败：\n{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                ShowToast($"打开项目失败：{ex.Message}", 4000);
             }
-        }
-
-        private void DebugBtn_Click(object sender, RoutedEventArgs e)
-        {
-            var runtimePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "PicScreenSaver.Runtime.exe");
-            if (!File.Exists(runtimePath))
-            {
-                MessageBox.Show("未找到 PicScreenSaver.Runtime.exe", "调试", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            var menu = new ContextMenu();
-            var testItem = new MenuItem { Header = "/s 全屏测试" };
-            testItem.Click += (s, args) => System.Diagnostics.Process.Start(runtimePath, "/s");
-            var configItem = new MenuItem { Header = "/c 设置弹窗" };
-            configItem.Click += (s, args) => System.Diagnostics.Process.Start(runtimePath, "/c");
-            var previewItem = new MenuItem { Header = "/p 预览(需HWND)" };
-            previewItem.Click += (s, args) => System.Diagnostics.Process.Start(runtimePath, "/p");
-            var noArgsItem = new MenuItem { Header = "(无参数)" };
-            noArgsItem.Click += (s, args) => System.Diagnostics.Process.Start(runtimePath);
-
-            menu.Items.Add(testItem);
-            menu.Items.Add(configItem);
-            menu.Items.Add(previewItem);
-            menu.Items.Add(noArgsItem);
-            menu.IsOpen = true;
         }
 
         private void SaveProject_Click(object sender, RoutedEventArgs e)
@@ -1089,7 +1120,7 @@ namespace PicScreenSaver.Maker
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"保存项目失败：\n{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                ShowToast($"保存项目失败：{ex.Message}", 4000);
             }
         }
 

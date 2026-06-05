@@ -47,8 +47,8 @@ namespace PicScreenSaver.Runtime.Engine.Transitions
         {
             var sb = new Storyboard();
             var time = TimeSpan.FromSeconds(duration);
-            double w = SystemParameters.PrimaryScreenWidth;
-            double h = SystemParameters.PrimaryScreenHeight;
+            double w = SystemParameters.WorkArea.Width;
+            double h = SystemParameters.WorkArea.Height;
 
             incoming.Clip = new RectangleGeometry(new Rect(0, 0, 0, h));
             incoming.Opacity = 1.0;
@@ -70,8 +70,8 @@ namespace PicScreenSaver.Runtime.Engine.Transitions
         {
             var sb = new Storyboard();
             var time = TimeSpan.FromSeconds(duration);
-            double w = SystemParameters.PrimaryScreenWidth;
-            double h = SystemParameters.PrimaryScreenHeight;
+            double w = SystemParameters.WorkArea.Width;
+            double h = SystemParameters.WorkArea.Height;
 
             incoming.Clip = new RectangleGeometry(new Rect(w, 0, 0, h));
             incoming.Opacity = 1.0;
@@ -93,8 +93,8 @@ namespace PicScreenSaver.Runtime.Engine.Transitions
         {
             var sb = new Storyboard();
             var time = TimeSpan.FromSeconds(duration);
-            double w = SystemParameters.PrimaryScreenWidth;
-            double h = SystemParameters.PrimaryScreenHeight;
+            double w = SystemParameters.WorkArea.Width;
+            double h = SystemParameters.WorkArea.Height;
 
             incoming.Clip = new RectangleGeometry(new Rect(0, 0, w, 0));
             incoming.Opacity = 1.0;
@@ -116,8 +116,8 @@ namespace PicScreenSaver.Runtime.Engine.Transitions
         {
             var sb = new Storyboard();
             var time = TimeSpan.FromSeconds(duration);
-            double w = SystemParameters.PrimaryScreenWidth;
-            double h = SystemParameters.PrimaryScreenHeight;
+            double w = SystemParameters.WorkArea.Width;
+            double h = SystemParameters.WorkArea.Height;
 
             incoming.Clip = new RectangleGeometry(new Rect(0, h, w, 0));
             incoming.Opacity = 1.0;
