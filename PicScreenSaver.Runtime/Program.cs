@@ -8,38 +8,57 @@ namespace PicScreenSaver.Runtime
         [STAThread]
         public static void Main(string[] args)
         {
-            var config = ResourceLoader.LoadConfig();
-            if (config == null)
+            var config = ResourceLoader.LoadConfig() ?? new ScreensaverConfig
             {
-                MessageBox.Show("无法加载配置文件。", "PicScreenSaver", MessageBoxButton.OK, MessageBoxImage.Error);
+                Version = "1.4",
+                DisplayDuration = 5.0,
+                TransitionDuration = 1.2,
+                ShuffleImages = true,
+                SelectedEffects = new[] { "Fade", "SlideLeft", "CrossFade" },
+                ImageCount = 3,
+                CreatedBy = "PicScreenSaver"
+            };
+
+            // 解析命令行参数：支持 /s /c /p:12345 -s -c
+            string raw = args.Length > 0 ? args[0].ToLower().TrimStart('/', '-') : "";
+            string command = raw.Length > 0 ? raw.Split(':')[0].Substring(0, 1) : "";
+
+            // 无参数：直接弹出设置窗口（Windows 对桌面 .scr 右键不传参）
+            if (command == "")
+            {
+                ShowConfigDialog(config);
                 return;
             }
 
-            string command = args.Length > 0 ? args[0].ToLower().TrimStart('/') : "s";
-
-            switch (command)
+            if (command == "p")
             {
-                case "s":
+                IntPtr parentHandle = IntPtr.Zero;
+                if (raw.Contains(":"))
+                {
+                    string afterColon = raw.Substring(raw.IndexOf(':') + 1);
+                    IntPtrTryParse(afterColon, out parentHandle);
+                }
+                else if (args.Length >= 2)
+                {
+                    IntPtrTryParse(args[1], out parentHandle);
+                }
+
+                if (parentHandle != IntPtr.Zero)
+                    RunPreview(parentHandle, config);
+                else
                     RunScreensaver(false, config);
-                    break;
-                case "c":
-                    ShowConfigDialog(config);
-                    break;
-                case "p":
-                    if (args.Length >= 2)
-                    {
-                        IntPtr parentHandle;
-                        if (IntPtrTryParse(args[1], out parentHandle))
-                            RunPreview(parentHandle, config);
-                        else
-                            RunScreensaver(false, config);
-                    }
-                    else
-                        RunScreensaver(false, config);
-                    break;
-                default:
-                    RunScreensaver(false, config);
-                    break;
+            }
+            else if (command == "c")
+            {
+                ShowConfigDialog(config);
+            }
+            else if (command == "t")
+            {
+                RunScreensaver(false, config);
+            }
+            else
+            {
+                RunScreensaver(false, config);
             }
         }
 
@@ -79,7 +98,9 @@ namespace PicScreenSaver.Runtime
             var app = new Application();
             app.ShutdownMode = ShutdownMode.OnLastWindowClose;
             var dialog = new ConfigDialog(config);
+            dialog.Closed += (s, e) => app.Shutdown();
             app.Run(dialog);
+            Environment.Exit(0);
         }
     }
 }

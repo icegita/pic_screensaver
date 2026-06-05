@@ -23,4 +23,13 @@
     <PackageReference Include="PeNet" Version="3.0.0" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.77" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PicScreenSaver.Runtime\PicScreenSaver.Runtime.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <Target Name="CopyRuntime" AfterTargets="Build">
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)..\PicScreenSaver.Runtime\bin\$(Configuration)\net48\PicScreenSaver.Runtime.exe"
+          DestinationFolder="$(OutputPath)" />
+  </Target>
 </Project>

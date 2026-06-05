@@ -19,12 +19,6 @@ namespace PicScreenSaver.Runtime.Engine.Transitions
             Description = description;
         }
 
-        public static readonly ZoomTransition ZoomIn = new ZoomTransition(
-            "ZoomIn", "ZoomIn", "画面从 95% 缓慢放大至 100%");
-
-        public static readonly ZoomTransition ZoomOut = new ZoomTransition(
-            "ZoomOut", "ZoomOut", "画面从 105% 缓慢缩小至 100%");
-
         public static readonly ZoomTransition ZoomInFade = new ZoomTransition(
             "ZoomInFade", "ZoomInFade", "放大同时淡入");
 
@@ -35,60 +29,10 @@ namespace PicScreenSaver.Runtime.Engine.Transitions
         {
             switch (Id)
             {
-                case "ZoomIn": return BuildZoomIn(outgoing, incoming, duration);
-                case "ZoomOut": return BuildZoomOut(outgoing, incoming, duration);
                 case "ZoomInFade": return BuildZoomInFade(outgoing, incoming, duration);
                 case "ZoomOutFade": return BuildZoomOutFade(outgoing, incoming, duration);
-                default: return BuildZoomIn(outgoing, incoming, duration);
+                default: return BuildZoomInFade(outgoing, incoming, duration);
             }
-        }
-
-        private Storyboard BuildZoomIn(FrameworkElement outgoing, FrameworkElement incoming, double duration)
-        {
-            var sb = new Storyboard();
-            var time = TimeSpan.FromSeconds(duration);
-
-            outgoing.RenderTransform = new ScaleTransform(0.95, 0.95);
-            outgoing.RenderTransformOrigin = new Point(0.5, 0.5);
-            outgoing.Opacity = 1.0;
-            incoming.Opacity = 0.0;
-            Panel.SetZIndex(outgoing, 1);
-
-            var scaleOut = new DoubleAnimation(0.95, 1.0, new Duration(time));
-            Storyboard.SetTarget(scaleOut, outgoing);
-            Storyboard.SetTargetProperty(scaleOut, new PropertyPath("(UIElement.RenderTransform).(ScaleTransform.ScaleX)"));
-
-            var scaleOutY = new DoubleAnimation(0.95, 1.0, new Duration(time));
-            Storyboard.SetTarget(scaleOutY, outgoing);
-            Storyboard.SetTargetProperty(scaleOutY, new PropertyPath("(UIElement.RenderTransform).(ScaleTransform.ScaleY)"));
-
-            sb.Children.Add(scaleOut);
-            sb.Children.Add(scaleOutY);
-            return sb;
-        }
-
-        private Storyboard BuildZoomOut(FrameworkElement outgoing, FrameworkElement incoming, double duration)
-        {
-            var sb = new Storyboard();
-            var time = TimeSpan.FromSeconds(duration);
-
-            outgoing.RenderTransform = new ScaleTransform(1.05, 1.05);
-            outgoing.RenderTransformOrigin = new Point(0.5, 0.5);
-            outgoing.Opacity = 1.0;
-            incoming.Opacity = 0.0;
-            Panel.SetZIndex(outgoing, 1);
-
-            var scaleOut = new DoubleAnimation(1.05, 1.0, new Duration(time));
-            Storyboard.SetTarget(scaleOut, outgoing);
-            Storyboard.SetTargetProperty(scaleOut, new PropertyPath("(UIElement.RenderTransform).(ScaleTransform.ScaleX)"));
-
-            var scaleOutY = new DoubleAnimation(1.05, 1.0, new Duration(time));
-            Storyboard.SetTarget(scaleOutY, outgoing);
-            Storyboard.SetTargetProperty(scaleOutY, new PropertyPath("(UIElement.RenderTransform).(ScaleTransform.ScaleY)"));
-
-            sb.Children.Add(scaleOut);
-            sb.Children.Add(scaleOutY);
-            return sb;
         }
 
         private Storyboard BuildZoomInFade(FrameworkElement outgoing, FrameworkElement incoming, double duration)

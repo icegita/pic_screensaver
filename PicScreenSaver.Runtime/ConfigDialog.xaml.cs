@@ -2,6 +2,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace PicScreenSaver.Runtime
 {
@@ -12,13 +14,19 @@ namespace PicScreenSaver.Runtime
         {
             "Fade", "FadeBlack", "FadeWhite", "CrossFade",
             "SlideLeft", "SlideRight", "SlideUp", "SlideDown",
-            "ZoomIn", "ZoomOut", "ZoomInFade", "ZoomOutFade",
+            "ZoomInFade", "ZoomOutFade",
             "WipeLeft", "WipeRight", "WipeUp", "WipeDown",
-            "FlipHorizontal", "FlipVertical", "PushLeft", "PushUp"
+            "FlipHorizontal", "FlipVertical",
+            "PushLeft", "PushUp"
         };
 
         private readonly System.Collections.Generic.HashSet<string> _selectedEffects =
             new System.Collections.Generic.HashSet<string>();
+
+        private static readonly Color AccentColor = (Color)ColorConverter.ConvertFromString("#6B8CFF");
+        private static readonly Color TextColor = (Color)ColorConverter.ConvertFromString("#E4E6F0");
+        private static readonly Color Text2Color = (Color)ColorConverter.ConvertFromString("#8A90A8");
+        private static readonly Color Surface2Color = (Color)ColorConverter.ConvertFromString("#1E2129");
 
         public ConfigDialog(ScreensaverConfig config)
         {
@@ -30,18 +38,17 @@ namespace PicScreenSaver.Runtime
             string destPath = Path.Combine(systemDir, scrName);
             bool alreadyInstalled = File.Exists(destPath);
 
-            Title = alreadyInstalled ? $"{scrName} 设置" : $"安装 {scrName}";
-            InstallButton.Visibility = alreadyInstalled ? Visibility.Collapsed : Visibility.Visible;
+            InstallBtn.Visibility = alreadyInstalled ? Visibility.Collapsed : Visibility.Visible;
 
             if (config == null) return;
 
-            InfoText.Text = $"版本 {config.CreatedBy ?? "1.0"}  ·  {config.ImageCount} 张图片";
+            InfoText.Text = $"{config.CreatedBy ?? "v1.0"}  ·  {config.ImageCount} 张图片";
 
             DisplayDurationSlider.Value = config.DisplayDuration;
-            DisplayDurationLabel.Text = $"{config.DisplayDuration:F1} 秒";
+            DisplayDurationLabel.Text = config.DisplayDuration.ToString("F1");
 
             TransitionDurationSlider.Value = config.TransitionDuration;
-            TransitionDurationLabel.Text = $"{config.TransitionDuration:F1} 秒";
+            TransitionDurationLabel.Text = config.TransitionDuration.ToString("F1");
 
             if (config.ShuffleImages)
                 OrderRandom.IsChecked = true;
@@ -54,19 +61,16 @@ namespace PicScreenSaver.Runtime
 
             foreach (var effect in AllEffects)
             {
-                var cb = new System.Windows.Controls.CheckBox
+                var cb = new CheckBox
                 {
-                    Content = new System.Windows.Controls.TextBlock
-                    {
-                        Text = effect,
-                        Foreground = new System.Windows.Media.SolidColorBrush(
-                            (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#E8E8F0")),
-                        FontSize = 12,
-                        FontFamily = new System.Windows.Media.FontFamily("Segoe UI")
-                    },
+                    Content = effect,
+                    Tag = effect,
                     IsChecked = _selectedEffects.Contains(effect),
-                    Margin = new Thickness(0, 0, 0, 4),
-                    Cursor = System.Windows.Input.Cursors.Hand
+                    Margin = new Thickness(0, 0, 0, 2),
+                    Cursor = System.Windows.Input.Cursors.Hand,
+                    Foreground = new SolidColorBrush(TextColor),
+                    FontSize = 12,
+                    FontFamily = new FontFamily("Segoe UI")
                 };
                 cb.Checked += EffectCheckBox_Changed;
                 cb.Unchecked += EffectCheckBox_Changed;
@@ -76,26 +80,52 @@ namespace PicScreenSaver.Runtime
 
         private void EffectCheckBox_Changed(object sender, RoutedEventArgs e)
         {
-            var cb = (System.Windows.Controls.CheckBox)sender;
-            var tb = cb.Content as System.Windows.Controls.TextBlock;
-            var effectName = tb?.Text;
-            if (effectName == null) return;
+            var cb = (CheckBox)sender;
+            var effectName = (string)cb.Tag;
             if (cb.IsChecked == true)
                 _selectedEffects.Add(effectName);
             else
                 _selectedEffects.Remove(effectName);
         }
 
+        private void SelectAll_Click(object sender, RoutedEventArgs e)
+        {
+            _selectedEffects.Clear();
+            foreach (var child in EffectsList.Children)
+            {
+                if (child is CheckBox cb)
+                {
+                    cb.IsChecked = true;
+                    _selectedEffects.Add((string)cb.Tag);
+                }
+            }
+        }
+
+        private void ClearAll_Click(object sender, RoutedEventArgs e)
+        {
+            _selectedEffects.Clear();
+            foreach (var child in EffectsList.Children)
+            {
+                if (child is CheckBox cb)
+                    cb.IsChecked = false;
+            }
+        }
+
         private void DisplayDuration_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if (DisplayDurationLabel != null)
-                DisplayDurationLabel.Text = $"{e.NewValue:F1} 秒";
+                DisplayDurationLabel.Text = e.NewValue.ToString("F1");
         }
 
         private void TransitionDuration_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if (TransitionDurationLabel != null)
-                TransitionDurationLabel.Text = $"{e.NewValue:F1} 秒";
+                TransitionDurationLabel.Text = e.NewValue.ToString("F1");
+        }
+
+        private void CloseBtn_Click(object sender, RoutedEventArgs e)
+        {
+            Close();
         }
 
         private void InstallButton_Click(object sender, RoutedEventArgs e)
@@ -110,8 +140,7 @@ namespace PicScreenSaver.Runtime
                 MessageBox.Show(
                     $"屏保已安装到：\n{destPath}\n\n请在桌面右键 → 个性化 → 锁屏界面 → 屏幕保护程序 中选择。",
                     "PicScreenSaver", MessageBoxButton.OK, MessageBoxImage.Information);
-                InstallButton.Visibility = Visibility.Collapsed;
-                Title = $"{Path.GetFileName(scrPath)} 设置";
+                InstallBtn.Visibility = Visibility.Collapsed;
             }
             catch (System.UnauthorizedAccessException)
             {
@@ -134,8 +163,7 @@ namespace PicScreenSaver.Runtime
                         MessageBox.Show(
                             $"屏保已安装到：\n{destPath}\n\n请在桌面右键 → 个性化 → 锁屏界面 → 屏幕保护程序 中选择。",
                             "PicScreenSaver", MessageBoxButton.OK, MessageBoxImage.Information);
-                        InstallButton.Visibility = Visibility.Collapsed;
-                        Title = $"{Path.GetFileName(scrPath)} 设置";
+                        InstallBtn.Visibility = Visibility.Collapsed;
                     }
                     else
                     {

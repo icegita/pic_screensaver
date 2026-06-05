@@ -1,89 +1,179 @@
 <Window x:Class="PicScreenSaver.Runtime.ConfigDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="PicScreenSaver 设置"
-        Width="520" Height="480"
+        Title="PicScreenSaver"
+        Width="640" Height="540"
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
-        Background="#1F1F23">
-    <Grid Margin="24">
+        Background="#0F1117"
+        WindowStyle="None"
+        AllowsTransparency="True">
+    <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="12"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="44"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="44"/>
         </Grid.RowDefinitions>
-        <TextBlock Grid.Row="0" Text="PicScreenSaver" FontSize="20" FontWeight="SemiBold"
-                   Foreground="#E8E8F0" FontFamily="Segoe UI"/>
-        <TextBlock Grid.Row="2" x:Name="InfoText" FontSize="12" Foreground="#9898A8"
-                   FontFamily="Segoe UI" TextWrapping="Wrap"/>
-        <Grid Grid.Row="3" Margin="0,12,0,0">
+
+        <!-- 标题栏 -->
+        <Border Grid.Row="0" Background="#171A22" BorderBrush="#2C3040" BorderThickness="0,0,0,1">
+            <Grid>
+                <TextBlock Text="PicScreenSaver" FontSize="12.5" FontWeight="Medium"
+                           Foreground="#8A90A8" FontFamily="Segoe UI"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <Button x:Name="CloseBtn" Content="✕" Width="36" Height="44"
+                        Background="Transparent" Foreground="#8A90A8" BorderThickness="0"
+                        FontSize="11" Cursor="Hand"
+                        HorizontalAlignment="Right"
+                        Click="CloseBtn_Click"/>
+            </Grid>
+        </Border>
+
+        <!-- 内容 -->
+        <Grid Grid.Row="1" Margin="24,16,24,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="16"/>
-                <ColumnDefinition Width="180"/>
+                <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <StackPanel Grid.Column="0">
-                <Border Background="#282C36" CornerRadius="8" Padding="16" Margin="0,0,0,12">
-                    <StackPanel>
-                        <TextBlock Text="播放时长" FontSize="13" FontWeight="Medium" Foreground="#E8E8F0" FontFamily="Segoe UI"/>
-                        <TextBlock Text="图片静止展示的时间" FontSize="11" Foreground="#606070" FontFamily="Segoe UI" Margin="0,2,0,8"/>
-                        <DockPanel>
-                            <TextBlock x:Name="DisplayDurationLabel" Text="5.0 秒" FontSize="13" Foreground="#6B8CFF"
-                                       FontFamily="Consolas" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                            <Slider x:Name="DisplayDurationSlider" Minimum="1" Maximum="30" Value="5" SmallChange="0.5" LargeChange="1"
-                                    TickFrequency="0.5" IsSnapToTickEnabled="True" ValueChanged="DisplayDuration_ValueChanged"/>
-                        </DockPanel>
-                    </StackPanel>
-                </Border>
-                <Border Background="#282C36" CornerRadius="8" Padding="16" Margin="0,0,0,12">
-                    <StackPanel>
-                        <TextBlock Text="过渡动画时长" FontSize="13" FontWeight="Medium" Foreground="#E8E8F0" FontFamily="Segoe UI"/>
-                        <TextBlock Text="切换动画播放时间" FontSize="11" Foreground="#606070" FontFamily="Segoe UI" Margin="0,2,0,8"/>
-                        <DockPanel>
-                            <TextBlock x:Name="TransitionDurationLabel" Text="1.2 秒" FontSize="13" Foreground="#6B8CFF"
-                                       FontFamily="Consolas" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                            <Slider x:Name="TransitionDurationSlider" Minimum="0.3" Maximum="5" Value="1.2" SmallChange="0.1" LargeChange="0.5"
-                                    TickFrequency="0.1" IsSnapToTickEnabled="True" ValueChanged="TransitionDuration_ValueChanged"/>
-                        </DockPanel>
-                    </StackPanel>
-                </Border>
-                <Border Background="#282C36" CornerRadius="8" Padding="16">
-                    <DockPanel>
-                        <TextBlock Text="播放顺序" FontSize="13" FontWeight="Medium" Foreground="#E8E8F0" FontFamily="Segoe UI"/>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <RadioButton x:Name="OrderRandom" Content="随机" IsChecked="True" GroupName="Order"
-                                         Foreground="#9898A8" FontSize="12" FontFamily="Segoe UI" Margin="0,0,12,0" Cursor="Hand"/>
-                            <RadioButton x:Name="OrderSequential" Content="顺序" GroupName="Order"
-                                         Foreground="#9898A8" FontSize="12" FontFamily="Segoe UI" Cursor="Hand"/>
+
+            <!-- 左栏：播放设置 -->
+            <Border Grid.Column="0" Background="#171A22" BorderBrush="#2C3040" BorderThickness="1" CornerRadius="10">
+                <StackPanel>
+                    <!-- 标题 -->
+                    <Border BorderBrush="#2C3040" BorderThickness="0,0,0,1" Padding="16,14">
+                        <TextBlock Text="&#x64AD;&#x653E;&#x8BBE;&#x7F6E;" FontSize="11" FontWeight="SemiBold"
+                                   Foreground="#565C74" FontFamily="Segoe UI"/>
+                    </Border>
+
+                    <!-- 展示时长 -->
+                    <Border BorderBrush="#2C3040" BorderThickness="0,0,0,1" Padding="16,14">
+                        <StackPanel>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="&#x6BCF;&#x5F20;&#x5C55;&#x793A;&#x65F6;&#x957F;" FontSize="11" FontWeight="SemiBold"
+                                               Foreground="#E4E6F0" FontFamily="Segoe UI"/>
+                                    <TextBlock Text="&#x56FE;&#x7247;&#x9759;&#x6B62;&#x5C55;&#x793A;&#x7684;&#x65F6;&#x95F4;" FontSize="10.5"
+                                               Foreground="#565C74" FontFamily="Segoe UI" Margin="0,1,0,0"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Border Background="#1E2129" CornerRadius="4" BorderThickness="0" Padding="6,2" Margin="0,0,6,0">
+                                        <TextBlock x:Name="DisplayDurationLabel" Text="5.0" FontSize="12" FontWeight="SemiBold"
+                                                   Foreground="#6B8CFF" FontFamily="Consolas"/>
+                                    </Border>
+                                    <TextBlock Text="&#x79D2;" FontSize="10.5" Foreground="#8A90A8" VerticalAlignment="Center" FontFamily="Segoe UI"/>
+                                </StackPanel>
+                            </Grid>
+                            <Slider x:Name="DisplayDurationSlider" Minimum="1" Maximum="30" Value="5"
+                                    SmallChange="0.5" LargeChange="1" TickFrequency="0.5" IsSnapToTickEnabled="True"
+                                    ValueChanged="DisplayDuration_ValueChanged"
+                                    Foreground="#6B8CFF" Margin="0,6,0,0"/>
                         </StackPanel>
-                    </DockPanel>
-                </Border>
-            </StackPanel>
-            <Border Grid.Column="2" Background="#282C36" CornerRadius="8" Padding="12">
+                    </Border>
+
+                    <!-- 过渡时长 -->
+                    <Border BorderBrush="#2C3040" BorderThickness="0,0,0,1" Padding="16,14">
+                        <StackPanel>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="&#x8FC7;&#x6E21;&#x52A8;&#x753B;&#x65F6;&#x957F;" FontSize="11" FontWeight="SemiBold"
+                                               Foreground="#E4E6F0" FontFamily="Segoe UI"/>
+                                    <TextBlock Text="&#x5207;&#x6362;&#x52A8;&#x753B;&#x64AD;&#x653E;&#x7684;&#x65F6;&#x95F4;" FontSize="10.5"
+                                               Foreground="#565C74" FontFamily="Segoe UI" Margin="0,1,0,0"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Border Background="#1E2129" CornerRadius="4" BorderThickness="0" Padding="6,2" Margin="0,0,6,0">
+                                        <TextBlock x:Name="TransitionDurationLabel" Text="1.2" FontSize="12" FontWeight="SemiBold"
+                                                   Foreground="#6B8CFF" FontFamily="Consolas"/>
+                                    </Border>
+                                    <TextBlock Text="&#x79D2;" FontSize="10.5" Foreground="#8A90A8" VerticalAlignment="Center" FontFamily="Segoe UI"/>
+                                </StackPanel>
+                            </Grid>
+                            <Slider x:Name="TransitionDurationSlider" Minimum="0.3" Maximum="5" Value="1.2"
+                                    SmallChange="0.1" LargeChange="0.5" TickFrequency="0.1" IsSnapToTickEnabled="True"
+                                    ValueChanged="TransitionDuration_ValueChanged"
+                                    Foreground="#6B8CFF" Margin="0,6,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 播放顺序 -->
+                    <Border Padding="16,14">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="&#x64AD;&#x653E;&#x987A;&#x5E8F;" FontSize="11" FontWeight="SemiBold"
+                                       Foreground="#E4E6F0" FontFamily="Segoe UI" VerticalAlignment="Center"/>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                <RadioButton x:Name="OrderSequential" Content="&#x987A;&#x5E8F;" GroupName="Order"
+                                             Foreground="#8A90A8" FontSize="12" FontFamily="Segoe UI" Margin="0,0,12,0" Cursor="Hand"/>
+                                <RadioButton x:Name="OrderRandom" Content="&#x968F;&#x673A;" IsChecked="True" GroupName="Order"
+                                             Foreground="#8A90A8" FontSize="12" FontFamily="Segoe UI" Cursor="Hand"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+            </Border>
+
+            <!-- 右栏：过渡效果 -->
+            <Border Grid.Column="2" Background="#171A22" BorderBrush="#2C3040" BorderThickness="1" CornerRadius="10">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-                    <TextBlock Grid.Row="0" Text="过渡效果" FontSize="13" FontWeight="Medium" Foreground="#E8E8F0"
-                               FontFamily="Segoe UI" Margin="0,0,0,8"/>
-                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                        <StackPanel x:Name="EffectsList"/>
+                    <Border Grid.Row="0" BorderBrush="#2C3040" BorderThickness="0,0,0,1" Padding="16,14">
+                        <DockPanel>
+                            <TextBlock Text="&#x8FC7;&#x6E21;&#x6548;&#x679C;" FontSize="11" FontWeight="SemiBold"
+                                       Foreground="#565C74" FontFamily="Segoe UI" VerticalAlignment="Center"/>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                <Button Content="&#x5168;&#x9009;" Click="SelectAll_Click"
+                                        Background="#1E2129" Foreground="#8A90A8" BorderBrush="#2C3040"
+                                        BorderThickness="1" Padding="7,2" FontSize="10.5" FontFamily="Segoe UI"
+                                        Cursor="Hand"/>
+                                <Button Content="&#x6E05;&#x7A7A;" Click="ClearAll_Click"
+                                        Background="#1E2129" Foreground="#8A90A8" BorderBrush="#2C3040"
+                                        BorderThickness="1" Padding="7,2" FontSize="10.5" FontFamily="Segoe UI"
+                                        Margin="6,0,0,0" Cursor="Hand"/>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Background="Transparent">
+                        <UniformGrid x:Name="EffectsList" Columns="1" Margin="4,0"/>
                     </ScrollViewer>
                 </Grid>
             </Border>
         </Grid>
-        <StackPanel Grid.Row="4" Orientation="Horizontal" Margin="0,12,0,0">
-            <Button x:Name="InstallButton" Content="安装到系统" Width="100" Height="30"
-                    Click="InstallButton_Click" Background="#3ECF8E" Foreground="White"
-                    BorderThickness="0" FontFamily="Segoe UI" FontSize="12" FontWeight="SemiBold"
-                    Cursor="Hand"/>
-            <Button Content="确定" Width="80" Height="30" HorizontalAlignment="Right"
-                    Click="OkButton_Click" Background="#6B8CFF" Foreground="White"
-                    BorderThickness="0" FontFamily="Segoe UI" FontSize="12" FontWeight="SemiBold"
-                    Cursor="Hand"/>
-        </StackPanel>
+
+        <!-- 底部栏 -->
+        <Border Grid.Row="2" Background="#171A22" BorderBrush="#2C3040" BorderThickness="0,1,0,0" Padding="20,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" x:Name="InfoText" Text="" FontSize="11" Foreground="#565C74"
+                           FontFamily="Segoe UI" VerticalAlignment="Center"/>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button x:Name="InstallBtn" Content="&#x5B89;&#x88C5;&#x5230;&#x7CFB;&#x7EDF;" Width="110" Height="28"
+                            Click="InstallButton_Click" Background="#3ECF8E" Foreground="White"
+                            BorderThickness="0" FontFamily="Segoe UI" FontSize="11" FontWeight="SemiBold"
+                            Cursor="Hand" Visibility="Collapsed"/>
+                    <Button Content="&#x786E;&#x5B9A;" Width="72" Height="28"
+                            Click="OkButton_Click" Background="#6B8CFF" Foreground="White"
+                            BorderThickness="0" FontFamily="Segoe UI" FontSize="11" FontWeight="SemiBold"
+                            Cursor="Hand"/>
+                </StackPanel>
+            </Grid>
+        </Border>
     </Grid>
 </Window>

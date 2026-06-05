@@ -28,17 +28,19 @@ namespace PicScreenSaver.Maker
         private bool _isDragging = false;
         private int _dragFromIndex = -1;
         private Border _draggedCard = null;
-        private bool _isDarkTheme = true;
+        private bool _isDarkTheme = false;
         private Point _mouseDownPos;
         private bool _dragThresholdMet = false;
         private Border _dragGhost = null;
-        private Border _insertIndicator = null;
+
         private int _dropTargetIndex = -1;
+        private int _prevHighlightIndex = -1;
 
         private static readonly string[] AllEffects = new[]
         {
-            "Fade", "FadeBlack", "CrossFade",
+            "Fade", "FadeBlack", "FadeWhite", "CrossFade",
             "SlideLeft", "SlideRight", "SlideUp", "SlideDown",
+            "ZoomInFade", "ZoomOutFade",
             "WipeLeft", "WipeRight", "WipeUp", "WipeDown",
             "FlipHorizontal", "FlipVertical",
             "PushLeft", "PushUp"
@@ -48,11 +50,14 @@ namespace PicScreenSaver.Maker
         {
             "旧图渐隐，新图渐现——最经典的过渡效果",
             "旧图淡至黑场，新图从黑场淡入",
+            "旧图淡至白场，新图从白场淡入",
             "新旧图叠加交叉淡变",
             "旧图静止，新图从右侧滑入",
             "旧图静止，新图从左侧滑入",
             "旧图静止，新图从下方滑入",
             "旧图静止，新图从上方滑入",
+            "放大同时淡入",
+            "缩小同时淡出",
             "遮罩从左向右展开，逐渐露出新图",
             "遮罩从右向左展开，逐渐露出新图",
             "遮罩从上向下展开，逐渐露出新图",
@@ -68,12 +73,15 @@ namespace PicScreenSaver.Maker
         public MainWindow()
         {
             InitializeComponent();
+            ThemeColors.SetDark(false);
             _outputPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
             OutputPathInput.Text = _outputPath;
             InitializeEffectsList();
             InitializePreviewImages();
             UpdateEstimate();
             CreateSliderButtons();
+            SetThemeIcon(_isDarkTheme);
+            UpdateSliderButtons();
         }
 
         private void CreateSliderButtons()
@@ -211,6 +219,36 @@ namespace PicScreenSaver.Maker
                     sb.Children.Add(CreateDoubleAnimation(EffectPreviewImageA, "Opacity", 1, 0, TimeSpan.FromSeconds(0.6)));
                     sb.Children.Add(CreateDoubleAnimation(EffectPreviewImageB, "Opacity", 0, 1, TimeSpan.FromSeconds(0.6)));
                     ((DoubleAnimation)sb.Children[1]).BeginTime = TimeSpan.FromSeconds(0.6);
+                    break;
+
+                case "FadeWhite":
+                    EffectPreviewImageA.Opacity = 1;
+                    EffectPreviewImageB.Opacity = 0;
+                    sb.Children.Add(CreateDoubleAnimation(EffectPreviewImageA, "Opacity", 1, 0, TimeSpan.FromSeconds(0.6)));
+                    sb.Children.Add(CreateDoubleAnimation(EffectPreviewImageB, "Opacity", 0, 1, TimeSpan.FromSeconds(0.6)));
+                    ((DoubleAnimation)sb.Children[1]).BeginTime = TimeSpan.FromSeconds(0.6);
+                    break;
+
+                case "ZoomInFade":
+                    EffectPreviewImageA.Opacity = 1; EffectPreviewImageB.Opacity = 0;
+                    EffectPreviewImageB.RenderTransform = new ScaleTransform(0.95, 0.95);
+                    EffectPreviewImageB.RenderTransformOrigin = new Point(0.5, 0.5);
+                    Panel.SetZIndex(EffectPreviewImageB, 1);
+                    sb.Children.Add(CreateScaleAnimation(EffectPreviewImageB, "ScaleX", 0.95, 1.0, duration));
+                    sb.Children.Add(CreateScaleAnimation(EffectPreviewImageB, "ScaleY", 0.95, 1.0, duration));
+                    sb.Children.Add(CreateDoubleAnimation(EffectPreviewImageB, "Opacity", 0, 1, duration));
+                    sb.Children.Add(CreateDoubleAnimation(EffectPreviewImageA, "Opacity", 1, 0, duration));
+                    break;
+
+                case "ZoomOutFade":
+                    EffectPreviewImageA.Opacity = 1; EffectPreviewImageB.Opacity = 0;
+                    EffectPreviewImageA.RenderTransform = new ScaleTransform(1.05, 1.05);
+                    EffectPreviewImageA.RenderTransformOrigin = new Point(0.5, 0.5);
+                    Panel.SetZIndex(EffectPreviewImageA, 1);
+                    sb.Children.Add(CreateScaleAnimation(EffectPreviewImageA, "ScaleX", 1.05, 1.0, duration));
+                    sb.Children.Add(CreateScaleAnimation(EffectPreviewImageA, "ScaleY", 1.05, 1.0, duration));
+                    sb.Children.Add(CreateDoubleAnimation(EffectPreviewImageA, "Opacity", 1, 0, duration));
+                    sb.Children.Add(CreateDoubleAnimation(EffectPreviewImageB, "Opacity", 0, 1, duration));
                     break;
 
                 case "CrossFade":
@@ -436,6 +474,17 @@ namespace PicScreenSaver.Maker
                     Margin = new Thickness(6), Cursor = Cursors.Hand, Tag = i,
                     Effect = isSelected ? new System.Windows.Media.Effects.DropShadowEffect { Color = ThemeColors.Accent, BlurRadius = 12, ShadowDepth = 0, Opacity = 0.3 } : null
                 };
+                // 首次布局完成后设置圆角裁剪
+                EventHandler layoutClip = null;
+                layoutClip = (s, args) =>
+                {
+                    if (card.ActualWidth > 0 && card.ActualHeight > 0)
+                    {
+                        card.Clip = new RectangleGeometry(new Rect(0, 0, card.ActualWidth, card.ActualHeight), 9.5, 9.5);
+                        card.LayoutUpdated -= layoutClip;
+                    }
+                };
+                card.LayoutUpdated += layoutClip;
                 card.MouseLeftButtonDown += ImageCard_Click;
                 card.MouseLeftButtonDown += Card_MouseLeftButtonDown;
                 card.MouseMove += Card_MouseMove;
@@ -447,7 +496,7 @@ namespace PicScreenSaver.Maker
                 if (item.Thumbnail != null)
                     grid.Children.Add(new Image { Source = item.Thumbnail, Stretch = Stretch.UniformToFill, Height = 110 });
 
-                grid.Children.Add(new TextBlock { Text = item.DisplayOrder.ToString("D2"), FontSize = 10, FontWeight = FontWeights.SemiBold, Foreground = ThemeColors.Brush(ThemeColors.BadgeText), FontFamily = new FontFamily("Consolas"), Margin = new Thickness(7, 7, 0, 0), HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top });
+                grid.Children.Add(new TextBlock { Text = item.DisplayOrder.ToString("D2"), FontSize = 10, FontWeight = FontWeights.SemiBold, Foreground = ThemeColors.Brush(ThemeColors.BadgeText), FontFamily = new FontFamily("Consolas"), Margin = new Thickness(7, 1, 0, 0), HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top });
 
                 var removeBtn = new TextBlock { Text = "✕", FontSize = 11, Foreground = ThemeColors.Brush(ThemeColors.BadgeText), Margin = new Thickness(0, 7, 7, 0), HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Top, Cursor = Cursors.Hand, RenderTransformOrigin = new Point(0.5, 0.5), RenderTransform = new ScaleTransform(1, 1) };
                 removeBtn.MouseEnter += (s, ev) => { removeBtn.Foreground = ThemeColors.Brush(ThemeColors.Accent); removeBtn.RenderTransform = new ScaleTransform(1.4, 1.4); };
@@ -455,7 +504,9 @@ namespace PicScreenSaver.Maker
                 removeBtn.MouseLeftButtonDown += (s, ev) => { _images.Remove(item); RefreshImageGrid(); UpdateEstimate(); };
                 grid.Children.Add(removeBtn);
 
-                grid.Children.Add(new StackPanel { Margin = new Thickness(10, 8, 10, 8), VerticalAlignment = VerticalAlignment.Bottom, Children = { new TextBlock { Text = item.FileName, FontSize = 11.5, FontWeight = FontWeights.Medium, Foreground = ThemeColors.Brush(ThemeColors.CardInfoMain), FontFamily = new FontFamily("Segoe UI"), TextTrimming = TextTrimming.CharacterEllipsis }, new TextBlock { Text = $"{item.ResolutionText} · {item.CompressedSizeText}", FontSize = 10.5, Foreground = ThemeColors.Brush(ThemeColors.CardInfoSub), FontFamily = new FontFamily("Consolas"), Margin = new Thickness(0, 2, 0, 0) } } });
+                grid.Children.Add(new TextBlock { Text = item.FileName, FontSize = 11.5, FontWeight = FontWeights.Medium, Foreground = ThemeColors.Brush(ThemeColors.CardInfoMain), FontFamily = new FontFamily("Segoe UI"), TextTrimming = TextTrimming.CharacterEllipsis, Margin = new Thickness(10, 0, 10, 1), VerticalAlignment = VerticalAlignment.Bottom });
+
+
 
                 card.Child = grid;
                 ImageGrid.Children.Add(card);
@@ -481,14 +532,281 @@ namespace PicScreenSaver.Maker
             UpdatePreview();
         }
 
-        // Drag and drop methods (unchanged)
-        private void Card_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) { _isDragging = false; _dragThresholdMet = false; _dragFromIndex = (int)((Border)sender).Tag; _draggedCard = (Border)sender; _mouseDownPos = e.GetPosition(this); _draggedCard.CaptureMouse(); }
-        private void Card_MouseMove(object sender, MouseEventArgs e) { /* full implementation in original */ }
-        private void Card_MouseLeftButtonUp(object sender, MouseButtonEventArgs e) { /* full implementation in original */ }
-        private void StartDragVisual() { /* full implementation in original */ }
-        private void EndDragVisual() { /* full implementation in original */ }
-        private int CalculateDropIndex(Point posInGrid) { /* full implementation in original */ return 0; }
-        private void UpdateInsertIndicator() { /* full implementation in original */ }
+        // ── Drag and drop ──────────────────────────────────────────
+        private void Card_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.LeftButton != MouseButtonState.Pressed) return;
+            _isDragging = false;
+            _dragThresholdMet = false;
+            _dragFromIndex = (int)((Border)sender).Tag;
+            _draggedCard = (Border)sender;
+            _mouseDownPos = e.GetPosition(this);
+            _draggedCard.CaptureMouse();
+        }
+
+        private void Card_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (_dragFromIndex < 0 || _draggedCard == null) return;
+
+            if (!_dragThresholdMet)
+            {
+                var pos = e.GetPosition(this);
+                if (Math.Abs(pos.X - _mouseDownPos.X) > 5 || Math.Abs(pos.Y - _mouseDownPos.Y) > 5)
+                {
+                    _dragThresholdMet = true;
+                    _isDragging = true;
+                    _draggedCard.Opacity = 0.4;
+                    StartDragVisual();
+                }
+                return;
+            }
+
+            // 跟随鼠标移动幽灵卡片
+            if (_dragGhost != null)
+            {
+                var pos = e.GetPosition(DragOverlay);
+                Canvas.SetLeft(_dragGhost, pos.X - 97.5);
+                Canvas.SetTop(_dragGhost, pos.Y - 75);
+            }
+
+            // 计算落点位置
+            var posInGrid = e.GetPosition(ImageGrid);
+            _dropTargetIndex = CalculateDropIndex(posInGrid);
+
+            // 高亮目标卡片
+            HighlightTargetCard(_dropTargetIndex);
+        }
+
+        private void Card_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            _draggedCard?.ReleaseMouseCapture();
+
+            if (_isDragging && _dropTargetIndex >= 0 && _dropTargetIndex != _dragFromIndex)
+            {
+                int insertAt = _dropTargetIndex;
+                if (insertAt > _dragFromIndex) insertAt--;
+
+                // 记录每个卡片当前的位置（用于后续平移动画）
+                var oldPositions = new Dictionary<int, Point>();
+                for (int i = 0; i < ImageGrid.Children.Count; i++)
+                {
+                    var card = (Border)ImageGrid.Children[i];
+                    oldPositions[i] = card.TransformToAncestor(ImageGrid).Transform(new Point(0, 0));
+                }
+
+                // 移动数据
+                var item = _images[_dragFromIndex];
+                _images.RemoveAt(_dragFromIndex);
+                if (insertAt >= _images.Count) _images.Add(item);
+                else _images.Insert(insertAt, item);
+
+                // 移动 WrapPanel 中的子元素
+                var child = ImageGrid.Children[_dragFromIndex];
+                ImageGrid.Children.RemoveAt(_dragFromIndex);
+                ImageGrid.Children.Insert(insertAt, child);
+
+                // 更新 Tag 和 DisplayOrder
+                for (int i = 0; i < ImageGrid.Children.Count; i++)
+                {
+                    ((Border)ImageGrid.Children[i]).Tag = i;
+                    _images[i].DisplayOrder = i + 1;
+                }
+
+                // 强制布局，获取新位置
+                ImageGrid.UpdateLayout();
+
+                // 平移动画：从旧位置滑到新位置
+                for (int i = 0; i < ImageGrid.Children.Count; i++)
+                {
+                    var card = (Border)ImageGrid.Children[i];
+                    if (!oldPositions.TryGetValue(i, out var oldPos)) continue;
+
+                    var newPos = card.TransformToAncestor(ImageGrid).Transform(new Point(0, 0));
+                    double dx = oldPos.X - newPos.X;
+                    double dy = oldPos.Y - newPos.Y;
+
+                    if (Math.Abs(dx) < 1 && Math.Abs(dy) < 1) continue;
+
+                    card.RenderTransform = new TranslateTransform(dx, dy);
+                    var sb = new Storyboard();
+                    var animX = new DoubleAnimation(dx, 0, new Duration(TimeSpan.FromSeconds(0.3)));
+                    animX.EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut };
+                    Storyboard.SetTarget(animX, card);
+                    Storyboard.SetTargetProperty(animX, new PropertyPath("RenderTransform.X"));
+                    var animY = new DoubleAnimation(dy, 0, new Duration(TimeSpan.FromSeconds(0.3)));
+                    animY.EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut };
+                    Storyboard.SetTarget(animY, card);
+                    Storyboard.SetTargetProperty(animY, new PropertyPath("RenderTransform.Y"));
+                    sb.Children.Add(animX);
+                    sb.Children.Add(animY);
+                    sb.Completed += (s, args) => card.RenderTransform = null;
+                    sb.Begin();
+                }
+
+                _selectedIndex = insertAt;
+                UpdatePreview();
+                ImageCountText.Text = $"{_images.Count} 张图片";
+                StatusImageCount.Text = $"{_images.Count} 张图片";
+
+                // 恢复卡片透明度
+                if (_draggedCard != null) _draggedCard.Opacity = 1.0;
+            }
+            else
+            {
+                if (_draggedCard != null) _draggedCard.Opacity = 1.0;
+            }
+
+            EndDragVisual();
+            _isDragging = false;
+            _dragThresholdMet = false;
+            _dragFromIndex = -1;
+            _draggedCard = null;
+            _dropTargetIndex = -1;
+        }
+
+        private void StartDragVisual()
+        {
+            if (_dragFromIndex < 0 || _dragFromIndex >= _images.Count || _draggedCard == null) return;
+
+            DragOverlay.Visibility = Visibility.Visible;
+
+            // 创建幽灵卡片（克隆视觉效果）
+            var ghost = new Border
+            {
+                Width = 183,
+                Height = 138,
+                Background = ThemeColors.Brush(ThemeColors.CardBg),
+                BorderThickness = new Thickness(0),
+                CornerRadius = new CornerRadius(10),
+                Opacity = 0.85,
+                Effect = new System.Windows.Media.Effects.DropShadowEffect
+                {
+                    Color = ThemeColors.Accent,
+                    BlurRadius = 16,
+                    ShadowDepth = 0,
+                    Opacity = 0.4
+                }
+            };
+
+            // 复制缩略图 + 序号到幽灵
+            var item = _images[_dragFromIndex];
+            var ghostGrid = new Grid();
+            if (item.Thumbnail != null)
+                ghostGrid.Children.Add(new Image { Source = item.Thumbnail, Stretch = Stretch.UniformToFill, Height = 110 });
+            ghostGrid.Children.Add(new TextBlock
+            {
+                Text = (_dragFromIndex + 1).ToString("D2"),
+                FontSize = 10,
+                FontWeight = FontWeights.SemiBold,
+                Foreground = ThemeColors.Brush(ThemeColors.BadgeText),
+                FontFamily = new FontFamily("Consolas"),
+                Margin = new Thickness(7, 1, 0, 0),
+                HorizontalAlignment = HorizontalAlignment.Left,
+                VerticalAlignment = VerticalAlignment.Top
+            });
+
+            // 幽灵底部文件名
+            ghostGrid.Children.Add(new TextBlock { Text = item.FileName, FontSize = 11.5, FontWeight = FontWeights.Medium, Foreground = ThemeColors.Brush(ThemeColors.CardInfoMain), FontFamily = new FontFamily("Segoe UI"), TextTrimming = TextTrimming.CharacterEllipsis, Margin = new Thickness(10, 0, 10, 0), VerticalAlignment = VerticalAlignment.Bottom });
+
+            ghost.Child = ghostGrid;
+
+            // 以窗口为公共祖先做坐标转换
+            try
+            {
+                var pos = _draggedCard.TransformToAncestor(this).Transform(new Point(0, 0));
+                var overlayOrigin = DragOverlay.TransformToAncestor(this).Transform(new Point(0, 0));
+                Canvas.SetLeft(ghost, pos.X - overlayOrigin.X);
+                Canvas.SetTop(ghost, pos.Y - overlayOrigin.Y);
+            }
+            catch
+            {
+                // 卡片已从视觉树移除,取消拖拽
+                _isDragging = false;
+                _dragThresholdMet = false;
+                if (_draggedCard != null) _draggedCard.Opacity = 1.0;
+                EndDragVisual();
+                return;
+            }
+            DragOverlay.Children.Add(ghost);
+            _dragGhost = ghost;
+        }
+
+        private void EndDragVisual()
+        {
+            DragOverlay.Children.Clear();
+            DragOverlay.Visibility = Visibility.Collapsed;
+            _dragGhost = null;
+            ClearHighlight();
+        }
+
+        private void ClearHighlight()
+        {
+            if (_prevHighlightIndex >= 0 && _prevHighlightIndex < ImageGrid.Children.Count)
+            {
+                if (ImageGrid.Children[_prevHighlightIndex] is Border card)
+                {
+                    if (_prevHighlightIndex == _selectedIndex)
+                    {
+                        card.BorderBrush = ThemeColors.Brush(ThemeColors.Accent);
+                        card.Effect = new System.Windows.Media.Effects.DropShadowEffect { Color = ThemeColors.Accent, BlurRadius = 12, ShadowDepth = 0, Opacity = 0.3 };
+                    }
+                    else
+                    {
+                        card.BorderBrush = ThemeColors.Brush(ThemeColors.CardBorder);
+                        card.Effect = null;
+                    }
+                }
+            }
+            _prevHighlightIndex = -1;
+        }
+
+        private void HighlightTargetCard(int targetIndex)
+        {
+            // 清除前一个高亮
+            if (_prevHighlightIndex >= 0 && _prevHighlightIndex != targetIndex)
+                ClearHighlight();
+
+            if (targetIndex < 0 || targetIndex >= ImageGrid.Children.Count || targetIndex == _dragFromIndex)
+            {
+                _prevHighlightIndex = targetIndex;
+                return;
+            }
+
+            if (ImageGrid.Children[targetIndex] is Border target)
+            {
+                target.BorderBrush = ThemeColors.Brush(ThemeColors.Accent);
+                target.Effect = new System.Windows.Media.Effects.DropShadowEffect { Color = ThemeColors.Accent, BlurRadius = 14, ShadowDepth = 0, Opacity = 0.5 };
+                _prevHighlightIndex = targetIndex;
+            }
+        }
+
+        private int CalculateDropIndex(Point posInGrid)
+        {
+            if (_images.Count == 0) return 0;
+
+            double slotW = 195.0;
+            double slotH = 150.0;
+
+            // 获取 ScrollViewer 滚动偏移
+            var scrollViewer = ImageGrid.Parent as ScrollViewer;
+            double scrollY = scrollViewer?.VerticalOffset ?? 0;
+
+            double x = posInGrid.X;
+            double y = posInGrid.Y + scrollY;
+
+            // 确保不超出边界
+            x = Math.Max(0, Math.Min(x, ImageGrid.ActualWidth - 1));
+            y = Math.Max(0, Math.Min(y, ImageGrid.ActualHeight - 1));
+
+            int cols = Math.Max(1, (int)(ImageGrid.ActualWidth / slotW));
+            int row = (int)(y / slotH);
+            int col = (int)(x / slotW);
+
+            int index = row * cols + col;
+            return Math.Max(0, Math.Min(index, _images.Count));
+        }
+
+
 
         private void UpdatePreview()
         {
@@ -506,12 +824,16 @@ namespace PicScreenSaver.Maker
         private void Card_MouseEnter(object sender, MouseEventArgs e)
         {
             var card = (Border)sender;
-            if ((int)card.Tag != _selectedIndex) { card.BorderBrush = ThemeColors.Brush(ThemeColors.Accent); card.RenderTransform = new TranslateTransform(0, -2); }
+            card.RenderTransform = new TranslateTransform(0, -2);
+            if ((int)card.Tag == _selectedIndex) return;
+            card.BorderBrush = ThemeColors.Brush(ThemeColors.Accent);
         }
         private void Card_MouseLeave(object sender, MouseEventArgs e)
         {
             var card = (Border)sender;
-            if ((int)card.Tag != _selectedIndex) { card.BorderBrush = ThemeColors.Brush(ThemeColors.CardBorder); card.RenderTransform = null; }
+            card.RenderTransform = null;
+            if ((int)card.Tag == _selectedIndex) return;
+            card.BorderBrush = ThemeColors.Brush(ThemeColors.CardBorder);
         }
 
         private void MoveUp_Click(object sender, RoutedEventArgs e)
@@ -543,11 +865,8 @@ namespace PicScreenSaver.Maker
             long totalCompressed = _images.Sum(img => img.CompressedSize);
             double totalMB = (totalCompressed + 200 * 1024 + 1024) / (1024.0 * 1024.0);
             EstimateSize.Text = totalMB.ToString("F1");
-            EstimateImagesText.Text = $"图片（{_images.Count} 张 JPEG {_quality}%）";
-            EstimateImagesSize.Text = $"~{FormatSize(totalCompressed + 200 * 1024 + 1024)}";
+            EstimateImagesText.Text = $"图片（{_images.Count} 张 {_quality}%）";
             StatusEstimate.Text = $"预计体积 ~{totalMB:F1} MB";
-            double barWidth = Math.Min(100, totalMB / 10.0 * 100);
-            EstimateBar.Width = barWidth;
         }
 
         private string FormatSize(long bytes)
@@ -571,7 +890,7 @@ namespace PicScreenSaver.Maker
             var config = new ScreensaverConfig
             {
                 Version = "1.4",
-                Title = TitleInput.Text,
+                Title = SaverNameInput.Text.Trim(),
                 DisplayDuration = _displayDuration,
                 TransitionDuration = _transitionDuration,
                 ShuffleImages = OrderRandom.IsChecked == true,
@@ -607,6 +926,146 @@ namespace PicScreenSaver.Maker
             SystemParametersInfo(SPI_SETSCREENSAVER, 0, destPath, SPIF_SENDWININICHANGE);
         }
 
+        private void OpenProject_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new OpenFileDialog
+            {
+                Filter = "屏保项目文件 (*.ssproj)|*.ssproj|所有文件|*.*",
+                Title = "打开项目"
+            };
+            if (dialog.ShowDialog() != true) return;
+
+            try
+            {
+                var json = File.ReadAllText(dialog.FileName);
+                var project = Newtonsoft.Json.JsonConvert.DeserializeObject<ProjectFile>(json);
+                if (project == null) { MessageBox.Show("项目文件格式无效。", "错误", MessageBoxButton.OK, MessageBoxImage.Error); return; }
+
+                // 恢复设置参数
+                _displayDuration = project.DisplayDuration;
+                DisplayDurationValue.Text = _displayDuration.ToString("F1");
+                _transitionDuration = project.TransitionDuration;
+                TransitionDurationValue.Text = _transitionDuration.ToString("F1");
+                _quality = project.Quality;
+                QualitySlider.Value = _quality;
+                _outputPath = project.OutputPath ?? _outputPath;
+                OutputPathInput.Text = _outputPath;
+                SaverNameInput.Text = project.SaverName ?? "MyScreensaver";
+                if (project.ShuffleImages) OrderRandom.IsChecked = true;
+                else OrderSequential.IsChecked = true;
+
+                // 恢复勾选效果
+                _selectedEffects.Clear();
+                if (project.SelectedEffects != null)
+                    foreach (var ef in project.SelectedEffects) _selectedEffects.Add(ef);
+                for (int i = 0; i < EffectsList.Children.Count; i++)
+                {
+                    if (EffectsList.Children[i] is CheckBox cb)
+                        cb.IsChecked = _selectedEffects.Contains((string)cb.Tag);
+                }
+                UpdateEffectCount();
+
+                // 恢复图片列表
+                _images.Clear();
+                _selectedIndex = -1;
+                if (project.ImagePaths != null)
+                {
+                    foreach (var path in project.ImagePaths)
+                    {
+                        if (File.Exists(path))
+                        {
+                            var item = _imageProcessor.ProcessImage(path, _quality);
+                            if (item.JpegBytes != null) _images.Add(item);
+                        }
+                    }
+                }
+                RefreshImageGrid();
+                UpdateEstimate();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"打开项目失败：\n{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void DebugBtn_Click(object sender, RoutedEventArgs e)
+        {
+            var runtimePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "PicScreenSaver.Runtime.exe");
+            if (File.Exists(runtimePath))
+            {
+                try { System.Diagnostics.Process.Start(runtimePath, "/c"); }
+                catch { MessageBox.Show("启动失败", "调试", MessageBoxButton.OK, MessageBoxImage.Warning); }
+            }
+            else
+            {
+                MessageBox.Show("未找到 PicScreenSaver.Runtime.exe，请先编译。", "调试", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+        private void SaveProject_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new SaveFileDialog
+            {
+                Filter = "屏保项目文件 (*.ssproj)|*.ssproj|所有文件|*.*",
+                Title = "保存项目",
+                FileName = SaverNameInput.Text.Trim() + ".ssproj"
+            };
+            if (dialog.ShowDialog() != true) return;
+
+            try
+            {
+                var project = new ProjectFile
+                {
+                    Version = "1.0",
+                    DisplayDuration = _displayDuration,
+                    TransitionDuration = _transitionDuration,
+                    Quality = _quality,
+                    ShuffleImages = OrderRandom.IsChecked == true,
+                    SelectedEffects = _selectedEffects.ToArray(),
+                    OutputPath = _outputPath,
+                    SaverName = SaverNameInput.Text.Trim(),
+                    Description = "",
+                    AutoInstall = InstallYes.IsChecked == true,
+                    ImagePaths = _images.Select(img => img.FilePath).ToList(),
+                    CreatedAt = DateTime.Now.ToString("o"),
+                    ModifiedAt = DateTime.Now.ToString("o")
+                };
+
+                var json = Newtonsoft.Json.JsonConvert.SerializeObject(project, Newtonsoft.Json.Formatting.Indented);
+                File.WriteAllText(dialog.FileName, json);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"保存项目失败：\n{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void SetThemeIcon(bool isDark)
+        {
+            var viewbox = new Viewbox { Width = 16, Height = 16, Stretch = Stretch.Uniform };
+
+            string pathData;
+            if (isDark)
+            {
+                // 月亮（新月形）
+                pathData = "M164.571429 241.371429c-171.885714 171.885714-171.885714 449.828571 0 621.714285s449.828571 171.885714 621.714285 0c54.857143-54.857143 95.085714-124.342857 113.371429-193.828571l3.657143-14.628572c7.314286-25.6-10.971429-47.542857-32.914286-54.857142-14.628571-3.657143-25.6 0-36.571429 7.314285-124.342857 69.485714-285.257143 51.2-391.314285-54.857143-91.428571-91.428571-117.028571-219.428571-80.457143-332.8l3.657143-10.971428c3.657143-25.6-10.971429-51.2-32.914286-62.171429-10.971429-3.657143-21.942857-3.657143-32.914286 0-3.657143 0-3.657143 0-3.657143 3.657143-47.542857 21.942857-91.428571 51.2-131.657142 91.428572z";
+            }
+            else
+            {
+                // 太阳（圆环 + 8 道光芒，含斜角）
+                pathData = "M512 511.4m-212 0a212 212 0 1 0 424 0 212 212 0 1 0-424 0Z M511.7 130.2c12.9-0.2 24.2 11.3 24.5 24.3l0.4 79.6c0.2 12.9-11.3 24.2-24.3 24.5-12.9 0.2-24.2-11.3-24.5-24.3l-0.4-79.6c0.9-14.9 11.4-24.3 24.3-24.5z M901.5 510c-0.2 12.9-9.6 23.4-24.5 24.3l-79.6-0.4c-12.9-0.2-24.5-11.5-24.3-24.5 0.2-12.9 11.5-24.5 24.5-24.3l79.6 0.4c12.9 0.3 24.5 11.6 24.3 24.5z M250.9 510c-0.2 12.9-9.6 23.4-24.5 24.3l-79.6-0.4c-12.9-0.2-24.5-11.5-24.3-24.5 0.2-12.9 11.5-24.5 24.5-24.3l79.6 0.4c12.9 0.3 24.5 11.6 24.3 24.5z M512.3 893.8c-12.9 0.2-24.2-11.3-24.5-24.3l-0.4-79.6c-0.2-12.9 11.3-24.2 24.3-24.5 12.9-0.2 24.2 11.3 24.5 24.3l0.4 79.6c-0.9 14.9-11.4 24.3-24.3 24.5z M781.2 242.3c9.3 9 9.1 25.1 0.1 34.5l-56 56.5c-9 9.3-25.1 9.1-34.5 0.1-9.3-9-9.1-25.1-0.1-34.5l56-56.5c11.1-9.9 25.1-9.1 34.5-0.1z M788.2 786.5c-9.3 9-23.3 9.8-34.5-0.1l-56-56.5c-9-9.3-9.2-25.5 0.1-34.5 9.3-9 25.5-9.2 34.5 0.1l56 56.5c9 9.3 9.2 25.5-0.1 34.5z M328.1 326.4c-9.3 9-23.3 9.8-34.5-0.1l-56-56.5c-9-9.3-9.2-25.5 0.1-34.5 9.3-9 25.5-9.2 34.5 0.1l56 56.5c9 9.4 9.3 25.5-0.1 34.5z M241.6 782.6c-9.3-9-9.1-25.1-0.1-34.5l56-56.5c9-9.3 25.1-9.1 34.5-0.1 9.3 9 9.1 25.1 0.1 34.5l-56 56.5c-11.1 9.9-25.2 9.1-34.5 0.1z";
+            }
+
+            viewbox.Child = new System.Windows.Shapes.Path
+            {
+                Data = Geometry.Parse(pathData),
+                Fill = ThemeColors.Brush(ThemeColors.Text2),
+                Stretch = Stretch.Uniform
+            };
+
+            ThemeToggleBtn.Content = viewbox;
+        }
+
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e) { }
 
         private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -630,7 +1089,7 @@ namespace PicScreenSaver.Maker
         private void ApplyTheme()
         {
             ThemeColors.SetDark(_isDarkTheme);
-            ThemeToggleBtn.Content = _isDarkTheme ? "\uE771" : "\uE706";
+            SetThemeIcon(_isDarkTheme);
 
             string themeFile = _isDarkTheme ? "Themes/Dark.xaml" : "Themes/Light.xaml";
             Application.Current.Resources.MergedDictionaries[0] =
