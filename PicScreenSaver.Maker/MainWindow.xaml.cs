@@ -991,15 +991,27 @@ namespace PicScreenSaver.Maker
         private void DebugBtn_Click(object sender, RoutedEventArgs e)
         {
             var runtimePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "PicScreenSaver.Runtime.exe");
-            if (File.Exists(runtimePath))
+            if (!File.Exists(runtimePath))
             {
-                try { System.Diagnostics.Process.Start(runtimePath, "/c"); }
-                catch { MessageBox.Show("启动失败", "调试", MessageBoxButton.OK, MessageBoxImage.Warning); }
+                MessageBox.Show("未找到 PicScreenSaver.Runtime.exe", "调试", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
             }
-            else
-            {
-                MessageBox.Show("未找到 PicScreenSaver.Runtime.exe，请先编译。", "调试", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
+
+            var menu = new ContextMenu();
+            var testItem = new MenuItem { Header = "/s 全屏测试" };
+            testItem.Click += (s, args) => System.Diagnostics.Process.Start(runtimePath, "/s");
+            var configItem = new MenuItem { Header = "/c 设置弹窗" };
+            configItem.Click += (s, args) => System.Diagnostics.Process.Start(runtimePath, "/c");
+            var previewItem = new MenuItem { Header = "/p 预览(需HWND)" };
+            previewItem.Click += (s, args) => System.Diagnostics.Process.Start(runtimePath, "/p");
+            var noArgsItem = new MenuItem { Header = "(无参数)" };
+            noArgsItem.Click += (s, args) => System.Diagnostics.Process.Start(runtimePath);
+
+            menu.Items.Add(testItem);
+            menu.Items.Add(configItem);
+            menu.Items.Add(previewItem);
+            menu.Items.Add(noArgsItem);
+            menu.IsOpen = true;
         }
 
         private void SaveProject_Click(object sender, RoutedEventArgs e)

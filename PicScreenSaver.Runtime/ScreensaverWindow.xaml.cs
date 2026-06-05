@@ -78,7 +78,6 @@ namespace PicScreenSaver.Runtime
             {
                 if (!IsWindow(parentHandle) || !IsWindowVisible(parentHandle))
                 {
-                    DebugLog.Write("预览父窗口消失 → 退出");
                     parentTimer.Stop();
                     ExitScreensaver();
                 }
@@ -88,10 +87,8 @@ namespace PicScreenSaver.Runtime
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            DebugLog.Write($"ScreensaverWindow.Loaded preview={_isPreview} images={_config.ImageCount}");
             if (_config.ImageCount == 0)
             {
-                DebugLog.Write("ImageCount=0, 直接关闭");
                 Close();
                 return;
             }
@@ -161,8 +158,6 @@ namespace PicScreenSaver.Runtime
             if (_isExiting) return;
             _isExiting = true;
 
-            DebugLog.Write("ExitScreensaver 被调用");
-
             _exitMonitor?.Stop();
             _engine?.Stop();
 
@@ -170,9 +165,7 @@ namespace PicScreenSaver.Runtime
             IncomingImage.Source = null;
 
             Topmost = false;
-            DebugLog.Write("ExitScreensaver → Close()");
             Close();
-            DebugLog.Write("ExitScreensaver → Shutdown(0)");
             Application.Current?.Shutdown(0);
         }
 
