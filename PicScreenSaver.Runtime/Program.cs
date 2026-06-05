@@ -57,6 +57,7 @@ namespace PicScreenSaver.Runtime
             }
             else if (command == "c" || command == "i")
             {
+                System.Windows.MessageBox.Show("args: " + string.Join(",", args) + "\nraw: " + raw + "\ncmd: " + command);
                 ShowConfigDialog(config);
             }
             else if (command == "t")
@@ -86,7 +87,7 @@ namespace PicScreenSaver.Runtime
 
         private static void RunScreensaver(bool preview, ScreensaverConfig config)
         {
-            var app = new Application();
+            var app = new App();
             app.ShutdownMode = ShutdownMode.OnLastWindowClose;
             var window = new ScreensaverWindow(config, preview);
             window.Closed += (s, e) => app.Shutdown();
@@ -96,7 +97,7 @@ namespace PicScreenSaver.Runtime
 
         private static void RunPreview(IntPtr parentHandle, ScreensaverConfig config)
         {
-            var app = new Application();
+            var app = new App();
             app.ShutdownMode = ShutdownMode.OnLastWindowClose;
             var window = new ScreensaverWindow(config, true, parentHandle);
             window.Closed += (s, e) => app.Shutdown();
@@ -106,7 +107,7 @@ namespace PicScreenSaver.Runtime
 
         private static void ShowConfigDialog(ScreensaverConfig config)
         {
-            var app = new Application();
+            var app = new App();
             app.ShutdownMode = ShutdownMode.OnLastWindowClose;
             var dialog = new ConfigDialog(config);
             dialog.Closed += (s, e) => app.Shutdown();

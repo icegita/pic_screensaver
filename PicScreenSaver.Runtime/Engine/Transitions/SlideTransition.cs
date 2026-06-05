@@ -45,9 +45,9 @@ namespace PicScreenSaver.Runtime.Engine.Transitions
 
         private Storyboard BuildSlideLeft(FrameworkElement outgoing, FrameworkElement incoming, double duration)
         {
-            var sb = new Storyboard();
+            var sb = new Storyboard(); sb.Duration = new Duration(TimeSpan.FromSeconds(duration));
             var time = TimeSpan.FromSeconds(duration);
-            double w = SystemParameters.WorkArea.Width;
+            double w = outgoing.ActualWidth;
 
             incoming.RenderTransform = new TranslateTransform(w, 0);
             incoming.Opacity = 1.0;
@@ -64,9 +64,9 @@ namespace PicScreenSaver.Runtime.Engine.Transitions
 
         private Storyboard BuildSlideRight(FrameworkElement outgoing, FrameworkElement incoming, double duration)
         {
-            var sb = new Storyboard();
+            var sb = new Storyboard(); sb.Duration = new Duration(TimeSpan.FromSeconds(duration));
             var time = TimeSpan.FromSeconds(duration);
-            double w = SystemParameters.WorkArea.Width;
+            double w = outgoing.ActualWidth;
 
             incoming.RenderTransform = new TranslateTransform(-w, 0);
             incoming.Opacity = 1.0;
@@ -83,9 +83,9 @@ namespace PicScreenSaver.Runtime.Engine.Transitions
 
         private Storyboard BuildSlideUp(FrameworkElement outgoing, FrameworkElement incoming, double duration)
         {
-            var sb = new Storyboard();
+            var sb = new Storyboard(); sb.Duration = new Duration(TimeSpan.FromSeconds(duration));
             var time = TimeSpan.FromSeconds(duration);
-            double h = SystemParameters.WorkArea.Height;
+            double h = outgoing.ActualHeight;
 
             incoming.RenderTransform = new TranslateTransform(0, h);
             incoming.Opacity = 1.0;
@@ -102,9 +102,9 @@ namespace PicScreenSaver.Runtime.Engine.Transitions
 
         private Storyboard BuildSlideDown(FrameworkElement outgoing, FrameworkElement incoming, double duration)
         {
-            var sb = new Storyboard();
+            var sb = new Storyboard(); sb.Duration = new Duration(TimeSpan.FromSeconds(duration));
             var time = TimeSpan.FromSeconds(duration);
-            double h = SystemParameters.WorkArea.Height;
+            double h = outgoing.ActualHeight;
 
             incoming.RenderTransform = new TranslateTransform(0, -h);
             incoming.Opacity = 1.0;

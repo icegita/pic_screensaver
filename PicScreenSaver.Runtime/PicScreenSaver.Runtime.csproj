@@ -11,4 +11,7 @@
     <StartupObject>PicScreenSaver.Runtime.Program</StartupObject>
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
+  <ItemGroup>
+    <Content Include="..\img\sys.png" CopyToOutputDirectory="PreserveNewest" Link="img\sys.png" />
+  </ItemGroup>
 </Project>

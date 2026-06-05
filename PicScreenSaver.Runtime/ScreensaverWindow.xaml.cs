@@ -51,11 +51,8 @@ namespace PicScreenSaver.Runtime
             Topmost = true;
             Cursor = Cursors.None;
 
-            var workArea = SystemParameters.WorkArea;
-            Left = workArea.Left;
-            Top = workArea.Top;
-            Width = workArea.Width;
-            Height = workArea.Height;
+            // 全屏覆盖整个屏幕（含任务栏区域）
+            WindowState = WindowState.Maximized;
         }
 
         private void SetupPreviewStyle()

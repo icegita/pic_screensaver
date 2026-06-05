@@ -39,12 +39,16 @@ namespace PicScreenSaver.Maker
 
         private static readonly string[] AllEffects = new[]
         {
-            "Fade", "FadeBlack", "FadeWhite", "CrossFade",
+            "Fade", "FadeBlack", "FadeWhite", "CrossFade", "FadeBlur",
             "SlideLeft", "SlideRight", "SlideUp", "SlideDown",
-            "ZoomInFade", "ZoomOutFade",
+            "ZoomInFade", "ZoomOutFade", "ZoomIn", "ZoomOut", "CrossZoom",
             "WipeLeft", "WipeRight", "WipeUp", "WipeDown",
-            "FlipHorizontal", "FlipVertical",
-            "PushLeft", "PushUp"
+            "PushLeft", "PushUp", "PushRight", "PushDown",
+            "RotateCW", "RotateCCW",
+            "BlindsH", "BlindsV",
+            "CircleReveal", "DiamondReveal",
+            "Checkerboard",
+            "RadialWipe"
         };
 
         private static readonly string[] EffectDescriptions = new[]
@@ -53,20 +57,32 @@ namespace PicScreenSaver.Maker
             "旧图淡至黑场，新图从黑场淡入",
             "旧图淡至白场，新图从白场淡入",
             "新旧图叠加交叉淡变",
+            "旧图模糊淡出，新图清晰淡入",
             "旧图静止，新图从右侧滑入",
             "旧图静止，新图从左侧滑入",
             "旧图静止，新图从下方滑入",
             "旧图静止，新图从上方滑入",
             "放大同时淡入",
             "缩小同时淡出",
+            "新图从 1.2x 缩小到 1.0x 切入",
+            "旧图从 1.0x 放大到 1.2x 淡出",
+            "旧图放大淡出的同时新图缩小淡入——电影感切换",
             "遮罩从左向右展开，逐渐露出新图",
             "遮罩从右向左展开，逐渐露出新图",
             "遮罩从上向下展开，逐渐露出新图",
             "遮罩从下向上展开，逐渐露出新图",
-            "以 Y 轴为中心水平翻转切换",
-            "以 X 轴为中心垂直翻转切换",
             "新旧图同步向左平移（翻页感）",
-            "新旧图同步向上平移（翻页感）"
+            "新旧图同步向上平移（翻页感）",
+            "新旧图同步向右平移（翻页感）",
+            "新旧图同步向下平移（翻页感）",
+            "新图顺时针旋转切入",
+            "新图逆时针旋转切入",
+            "水平百叶窗式揭开",
+            "垂直百叶窗式揭开",
+            "圆形遮罩从中心扩大展开",
+            "菱形遮罩从中心扩大展开",
+            "棋盘格小块逐个展开揭示新图",
+            "时钟式扇形扫过展开新图"
         };
 
         private readonly HashSet<string> _selectedEffects = new HashSet<string>();
@@ -74,6 +90,17 @@ namespace PicScreenSaver.Maker
         public MainWindow()
         {
             InitializeComponent();
+
+            // 设置窗口图标
+            try
+            {
+                string exeDir = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+                string iconPath = System.IO.Path.Combine(exeDir, "img", "icon.png");
+                if (System.IO.File.Exists(iconPath))
+                    Icon = new System.Windows.Media.Imaging.BitmapImage(new Uri(iconPath));
+            }
+            catch { }
+
             ThemeColors.SetDark(false);
             _outputPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
             OutputPathInput.Text = _outputPath;
@@ -351,11 +378,6 @@ namespace PicScreenSaver.Maker
                     PlayWipePreview(effectName, duration);
                     return;
 
-                case "FlipHorizontal":
-                case "FlipVertical":
-                    PlayFlipPreview(effectName, duration);
-                    return;
-
                 case "PushLeft":
                     EffectPreviewImageA.Opacity = 1; EffectPreviewImageB.Opacity = 1;
                     EffectPreviewImageA.RenderTransform = new TranslateTransform(0, 0);
@@ -372,6 +394,134 @@ namespace PicScreenSaver.Maker
                     Panel.SetZIndex(EffectPreviewImageB, 1);
                     sb.Children.Add(CreateTranslateAnimation(EffectPreviewImageA, "Y", 0, -263, duration));
                     sb.Children.Add(CreateTranslateAnimation(EffectPreviewImageB, "Y", 263, 0, duration));
+                    break;
+
+                case "PushRight":
+                    EffectPreviewImageA.Opacity = 1; EffectPreviewImageB.Opacity = 1;
+                    EffectPreviewImageA.RenderTransform = new TranslateTransform(0, 0);
+                    EffectPreviewImageB.RenderTransform = new TranslateTransform(-420, 0);
+                    Panel.SetZIndex(EffectPreviewImageB, 1);
+                    sb.Children.Add(CreateTranslateAnimation(EffectPreviewImageA, "X", 0, 420, duration));
+                    sb.Children.Add(CreateTranslateAnimation(EffectPreviewImageB, "X", -420, 0, duration));
+                    break;
+
+                case "PushDown":
+                    EffectPreviewImageA.Opacity = 1; EffectPreviewImageB.Opacity = 1;
+                    EffectPreviewImageA.RenderTransform = new TranslateTransform(0, 0);
+                    EffectPreviewImageB.RenderTransform = new TranslateTransform(0, -263);
+                    Panel.SetZIndex(EffectPreviewImageB, 1);
+                    sb.Children.Add(CreateTranslateAnimation(EffectPreviewImageA, "Y", 0, 263, duration));
+                    sb.Children.Add(CreateTranslateAnimation(EffectPreviewImageB, "Y", -263, 0, duration));
+                    break;
+
+                case "FadeBlur":
+                    EffectPreviewImageA.Opacity = 1; EffectPreviewImageB.Opacity = 0;
+                    EffectPreviewImageA.Effect = new System.Windows.Media.Effects.BlurEffect { Radius = 0 };
+                    EffectPreviewImageB.Effect = new System.Windows.Media.Effects.BlurEffect { Radius = 6 };
+                    Panel.SetZIndex(EffectPreviewImageB, 1);
+                    sb.Children.Add(CreateDoubleAnimation(EffectPreviewImageA, "Opacity", 1, 0, duration));
+                    sb.Children.Add(CreateDoubleAnimation(EffectPreviewImageB, "Opacity", 0, 1, duration));
+                    sb.Completed += (s2, e2) => { EffectPreviewImageA.Effect = null; EffectPreviewImageB.Effect = null; };
+                    break;
+
+                case "ZoomIn":
+                    EffectPreviewImageA.Opacity = 1; EffectPreviewImageB.Opacity = 0;
+                    EffectPreviewImageB.RenderTransform = new ScaleTransform(1.2, 1.2);
+                    EffectPreviewImageB.RenderTransformOrigin = new Point(0.5, 0.5);
+                    Panel.SetZIndex(EffectPreviewImageB, 1);
+                    sb.Children.Add(CreateScaleAnimation(EffectPreviewImageB, "ScaleX", 1.2, 1.0, duration));
+                    sb.Children.Add(CreateScaleAnimation(EffectPreviewImageB, "ScaleY", 1.2, 1.0, duration));
+                    sb.Children.Add(CreateDoubleAnimation(EffectPreviewImageB, "Opacity", 0, 1, duration));
+                    sb.Children.Add(CreateDoubleAnimation(EffectPreviewImageA, "Opacity", 1, 0, duration));
+                    break;
+
+                case "ZoomOut":
+                    EffectPreviewImageA.Opacity = 1; EffectPreviewImageB.Opacity = 0;
+                    EffectPreviewImageA.RenderTransform = new ScaleTransform(1.0, 1.0);
+                    EffectPreviewImageA.RenderTransformOrigin = new Point(0.5, 0.5);
+                    Panel.SetZIndex(EffectPreviewImageA, 1);
+                    sb.Children.Add(CreateScaleAnimation(EffectPreviewImageA, "ScaleX", 1.0, 1.2, duration));
+                    sb.Children.Add(CreateScaleAnimation(EffectPreviewImageA, "ScaleY", 1.0, 1.2, duration));
+                    sb.Children.Add(CreateDoubleAnimation(EffectPreviewImageA, "Opacity", 1, 0, duration));
+                    sb.Children.Add(CreateDoubleAnimation(EffectPreviewImageB, "Opacity", 0, 1, duration));
+                    break;
+
+                case "RotateCW":
+                    EffectPreviewImageA.Opacity = 1; EffectPreviewImageB.Opacity = 0;
+                    EffectPreviewImageB.RenderTransformOrigin = new Point(0.5, 0.5);
+                    EffectPreviewImageB.RenderTransform = new RotateTransform(-15);
+                    Panel.SetZIndex(EffectPreviewImageB, 1);
+                    sb.Children.Add(CreateDoubleAnimationT(EffectPreviewImageB, "(UIElement.RenderTransform).(RotateTransform.Angle)", -15, 0, duration));
+                    sb.Children.Add(CreateDoubleAnimation(EffectPreviewImageB, "Opacity", 0, 1, duration));
+                    sb.Children.Add(CreateDoubleAnimation(EffectPreviewImageA, "Opacity", 1, 0, duration));
+                    break;
+
+                case "RotateCCW":
+                    EffectPreviewImageA.Opacity = 1; EffectPreviewImageB.Opacity = 0;
+                    EffectPreviewImageB.RenderTransformOrigin = new Point(0.5, 0.5);
+                    EffectPreviewImageB.RenderTransform = new RotateTransform(15);
+                    Panel.SetZIndex(EffectPreviewImageB, 1);
+                    sb.Children.Add(CreateDoubleAnimationT(EffectPreviewImageB, "(UIElement.RenderTransform).(RotateTransform.Angle)", 15, 0, duration));
+                    sb.Children.Add(CreateDoubleAnimation(EffectPreviewImageB, "Opacity", 0, 1, duration));
+                    sb.Children.Add(CreateDoubleAnimation(EffectPreviewImageA, "Opacity", 1, 0, duration));
+                    break;
+
+                case "BlindsH":
+                case "BlindsV":
+                    PlayBlindsPreview(effectName, duration);
+                    return;
+
+                case "CrossZoom":
+                    EffectPreviewImageA.Opacity = 1; EffectPreviewImageB.Opacity = 0;
+                    EffectPreviewImageA.RenderTransform = new ScaleTransform(1.0, 1.0);
+                    EffectPreviewImageA.RenderTransformOrigin = new Point(0.5, 0.5);
+                    EffectPreviewImageB.RenderTransform = new ScaleTransform(1.3, 1.3);
+                    EffectPreviewImageB.RenderTransformOrigin = new Point(0.5, 0.5);
+                    Panel.SetZIndex(EffectPreviewImageB, 1);
+                    sb.Children.Add(CreateScaleAnimation(EffectPreviewImageA, "ScaleX", 1.0, 1.3, duration));
+                    sb.Children.Add(CreateScaleAnimation(EffectPreviewImageA, "ScaleY", 1.0, 1.3, duration));
+                    sb.Children.Add(CreateScaleAnimation(EffectPreviewImageB, "ScaleX", 1.3, 1.0, duration));
+                    sb.Children.Add(CreateScaleAnimation(EffectPreviewImageB, "ScaleY", 1.3, 1.0, duration));
+                    sb.Children.Add(CreateDoubleAnimation(EffectPreviewImageA, "Opacity", 1, 0, duration));
+                    sb.Children.Add(CreateDoubleAnimation(EffectPreviewImageB, "Opacity", 0, 1, duration));
+                    break;
+
+                case "CircleReveal":
+                    EffectPreviewImageA.Opacity = 1; EffectPreviewImageB.Opacity = 1;
+                    Panel.SetZIndex(EffectPreviewImageB, 1);
+                    double maxR = Math.Sqrt(420*420 + 263*263) / 2.0;
+                    EffectPreviewImageB.Clip = new EllipseGeometry(new Point(210, 131.5), 0, 0);
+                    var circleAnim = new EllipseRadiusAnimation(new Point(210, 131.5), 0, 0, maxR, maxR, duration);
+                    Storyboard.SetTarget(circleAnim, EffectPreviewImageB);
+                    Storyboard.SetTargetProperty(circleAnim, new PropertyPath("Clip"));
+                    sb.Children.Add(circleAnim);
+                    sb.Completed += (s2, e2) => { EffectPreviewImageB.Clip = null; };
+                    break;
+
+                case "DiamondReveal":
+                    EffectPreviewImageA.Opacity = 1; EffectPreviewImageB.Opacity = 1;
+                    Panel.SetZIndex(EffectPreviewImageB, 1);
+                    var dAnim = new DiamondRevealAnimation(420, 263, duration);
+                    Storyboard.SetTarget(dAnim, EffectPreviewImageB);
+                    Storyboard.SetTargetProperty(dAnim, new PropertyPath("Clip"));
+                    sb.Children.Add(dAnim);
+                    sb.Completed += (s2, e2) => { EffectPreviewImageB.Clip = null; };
+                    break;
+
+                case "Checkerboard":
+                    PlayCheckerboardPreview(duration);
+                    return;
+
+                case "RadialWipe":
+                    EffectPreviewImageA.Opacity = 1; EffectPreviewImageB.Opacity = 1;
+                    Panel.SetZIndex(EffectPreviewImageB, 1);
+                    double rw = 420, rh = 263;
+                    double r = Math.Sqrt(rw*rw + rh*rh);
+                    var radialAnim = new RadialSectorAnimation(rw/2, rh/2, r, duration);
+                    Storyboard.SetTarget(radialAnim, EffectPreviewImageB);
+                    Storyboard.SetTargetProperty(radialAnim, new PropertyPath("Clip"));
+                    sb.Children.Add(radialAnim);
+                    sb.Completed += (s2, e2) => { EffectPreviewImageB.Clip = null; };
                     break;
 
                 default:
@@ -475,6 +625,52 @@ namespace PicScreenSaver.Maker
             Storyboard.SetTarget(anim, target);
             Storyboard.SetTargetProperty(anim, new PropertyPath($"(UIElement.RenderTransform).(ScaleTransform.{axis})"));
             return anim;
+        }
+
+        private DoubleAnimation CreateDoubleAnimationT(FrameworkElement target, string propertyPath, double from, double to, TimeSpan duration)
+        {
+            var anim = new DoubleAnimation(from, to, new Duration(duration));
+            Storyboard.SetTarget(anim, target);
+            Storyboard.SetTargetProperty(anim, new PropertyPath(propertyPath));
+            return anim;
+        }
+
+        private void PlayBlindsPreview(string effectName, TimeSpan duration)
+        {
+            double pw = 420, ph = 263;
+            int count = 8;
+
+            EffectPreviewImageA.Opacity = 1;
+            EffectPreviewImageB.Opacity = 1;
+            Panel.SetZIndex(EffectPreviewImageB, 1);
+
+            var anim = new BlindsGeometryAnimation(pw, ph, count, effectName == "BlindsH", duration);
+            Storyboard.SetTarget(anim, EffectPreviewImageB);
+            Storyboard.SetTargetProperty(anim, new PropertyPath("Clip"));
+
+            var sb = new Storyboard();
+            sb.Children.Add(anim);
+            sb.Completed += (s, e) => { EffectPreviewImageB.Clip = null; EffectPreviewImageB.Opacity = 0; };
+            sb.Begin();
+        }
+
+        private void PlayCheckerboardPreview(TimeSpan duration)
+        {
+            double pw = 420, ph = 263;
+            int cols = 8, rows = 6;
+
+            EffectPreviewImageA.Opacity = 1;
+            EffectPreviewImageB.Opacity = 1;
+            Panel.SetZIndex(EffectPreviewImageB, 1);
+
+            var anim = new CheckerboardGeometryAnimation(pw, ph, cols, rows, duration);
+            Storyboard.SetTarget(anim, EffectPreviewImageB);
+            Storyboard.SetTargetProperty(anim, new PropertyPath("Clip"));
+
+            var sb = new Storyboard();
+            sb.Children.Add(anim);
+            sb.Completed += (s, e) => { EffectPreviewImageB.Clip = null; EffectPreviewImageB.Opacity = 0; };
+            sb.Begin();
         }
 
         private void UpdateEffectCount() { SelectedEffectCount.Text = _selectedEffects.Count.ToString(); }
@@ -1192,6 +1388,140 @@ namespace PicScreenSaver.Maker
             TransitionDurationMinusBtn.Background = bg; TransitionDurationMinusBtn.Foreground = fg;
             TransitionDurationPlusBtn.Background = bg; TransitionDurationPlusBtn.Foreground = fg;
         }
+    }
+}
+
+public class EllipseRadiusAnimation : System.Windows.Media.Animation.AnimationTimeline
+{
+    public override Type TargetPropertyType => typeof(System.Windows.Media.Geometry);
+    private System.Windows.Point _center;
+    private double _fromRX, _fromRY, _toRX, _toRY;
+    private TimeSpan _duration;
+    public EllipseRadiusAnimation(System.Windows.Point center, double fromRX, double fromRY, double toRX, double toRY, TimeSpan duration)
+    { _center = center; _fromRX = fromRX; _fromRY = fromRY; _toRX = toRX; _toRY = toRY; _duration = duration; }
+    protected override Freezable CreateInstanceCore() { return new EllipseRadiusAnimation(_center, _fromRX, _fromRY, _toRX, _toRY, _duration); }
+    public override object GetCurrentValue(object defaultOriginValue, object defaultDestinationValue, System.Windows.Media.Animation.AnimationClock clock)
+    {
+        if (clock == null || clock.CurrentProgress == null) return new System.Windows.Media.EllipseGeometry(_center, _fromRX, _fromRY);
+        double t = clock.CurrentProgress.Value;
+        return new System.Windows.Media.EllipseGeometry(_center,
+            _fromRX + (_toRX - _fromRX) * t,
+            _fromRY + (_toRY - _fromRY) * t);
+    }
+}
+
+public class DiamondRevealAnimation : System.Windows.Media.Animation.AnimationTimeline
+{
+    public override Type TargetPropertyType => typeof(System.Windows.Media.Geometry);
+    private double _w, _h; private TimeSpan _duration;
+    public DiamondRevealAnimation(double w, double h, TimeSpan duration) { _w = w; _h = h; _duration = duration; }
+    protected override Freezable CreateInstanceCore() { return new DiamondRevealAnimation(_w, _h, _duration); }
+    public override object GetCurrentValue(object defaultOriginValue, object defaultDestinationValue, System.Windows.Media.Animation.AnimationClock clock)
+    {
+        if (clock == null || clock.CurrentProgress == null) return new System.Windows.Media.RectangleGeometry(new System.Windows.Rect(0, 0, 0, 0));
+        double t = clock.CurrentProgress.Value;
+        double cx = _w / 2.0, cy = _h / 2.0;
+        double size = Math.Max(_w, _h) * t;
+        var pts = new System.Windows.Media.PointCollection(new[]
+        {
+            new System.Windows.Point(cx, cy - size),
+            new System.Windows.Point(cx + size, cy),
+            new System.Windows.Point(cx, cy + size),
+            new System.Windows.Point(cx - size, cy),
+        });
+        var seg = new System.Windows.Media.PathSegmentCollection { new System.Windows.Media.PolyLineSegment(pts, true) };
+        var fig = new System.Windows.Media.PathFigure(pts[0], seg, true);
+        return new System.Windows.Media.PathGeometry(new[] { fig });
+    }
+}
+
+public class BlindsGeometryAnimation : System.Windows.Media.Animation.AnimationTimeline
+{
+    public override Type TargetPropertyType => typeof(System.Windows.Media.Geometry);
+    private double _w, _h; private int _count; private bool _horizontal; private TimeSpan _duration;
+    public BlindsGeometryAnimation(double w, double h, int count, bool horizontal, TimeSpan duration)
+    { _w = w; _h = h; _count = count; _horizontal = horizontal; _duration = duration; }
+    protected override Freezable CreateInstanceCore() { return new BlindsGeometryAnimation(_w, _h, _count, _horizontal, _duration); }
+    public override object GetCurrentValue(object defaultOriginValue, object defaultDestinationValue, System.Windows.Media.Animation.AnimationClock clock)
+    {
+        if (clock == null || clock.CurrentProgress == null) return new System.Windows.Media.RectangleGeometry(new System.Windows.Rect(0, 0, 0, 0));
+        double t = clock.CurrentProgress.Value;
+        var group = new System.Windows.Media.GeometryGroup();
+        if (_horizontal)
+        {
+            double stripH = _h / _count;
+            for (int i = 0; i < _count; i++)
+            {
+                double sh = stripH * t;
+                if (sh > 0.5) group.Children.Add(new System.Windows.Media.RectangleGeometry(new System.Windows.Rect(0, i * stripH, _w, sh)));
+            }
+        }
+        else
+        {
+            double stripW = _w / _count;
+            for (int i = 0; i < _count; i++)
+            {
+                double sw = stripW * t;
+                if (sw > 0.5) group.Children.Add(new System.Windows.Media.RectangleGeometry(new System.Windows.Rect(i * stripW, 0, sw, _h)));
+            }
+        }
+        if (group.Children.Count == 0) return new System.Windows.Media.RectangleGeometry(new System.Windows.Rect(0, 0, 0, 0));
+        return group;
+    }
+}
+
+public class CheckerboardGeometryAnimation : System.Windows.Media.Animation.AnimationTimeline
+{
+    public override Type TargetPropertyType => typeof(System.Windows.Media.Geometry);
+    private double _w, _h; private int _cols, _rows; private TimeSpan _duration;
+    public CheckerboardGeometryAnimation(double w, double h, int cols, int rows, TimeSpan duration)
+    { _w = w; _h = h; _cols = cols; _rows = rows; _duration = duration; }
+    protected override Freezable CreateInstanceCore() { return new CheckerboardGeometryAnimation(_w, _h, _cols, _rows, _duration); }
+    public override object GetCurrentValue(object defaultOriginValue, object defaultDestinationValue, System.Windows.Media.Animation.AnimationClock clock)
+    {
+        if (clock == null || clock.CurrentProgress == null) return new System.Windows.Media.RectangleGeometry(new System.Windows.Rect(0, 0, 0, 0));
+        double t = clock.CurrentProgress.Value;
+        double cw = _w / _cols, ch = _h / _rows;
+        var group = new System.Windows.Media.GeometryGroup();
+        for (int r = 0; r < _rows; r++)
+            for (int c = 0; c < _cols; c++)
+            {
+                double delay = (r + c) * 0.04;
+                double cellT = (t - delay) / (1.0 - 0.04 * (_rows + _cols - 2));
+                if (cellT <= 0) continue;
+                if (cellT > 1.0) cellT = 1.0;
+                double tw = cw * cellT, th = ch * cellT;
+                if (tw > 0.5 && th > 0.5)
+                    group.Children.Add(new System.Windows.Media.RectangleGeometry(new System.Windows.Rect(c * cw, r * ch, tw, th)));
+            }
+        if (group.Children.Count == 0) return new System.Windows.Media.RectangleGeometry(new System.Windows.Rect(0, 0, 0, 0));
+        return group;
+    }
+}
+
+public class RadialSectorAnimation : System.Windows.Media.Animation.AnimationTimeline
+{
+    public override Type TargetPropertyType => typeof(System.Windows.Media.Geometry);
+    private double _cx, _cy, _r; private TimeSpan _duration;
+    public RadialSectorAnimation(double cx, double cy, double r, TimeSpan duration) { _cx = cx; _cy = cy; _r = r; _duration = duration; }
+    protected override Freezable CreateInstanceCore() { return new RadialSectorAnimation(_cx, _cy, _r, _duration); }
+    public override object GetCurrentValue(object defaultOriginValue, object defaultDestinationValue, System.Windows.Media.Animation.AnimationClock clock)
+    {
+        if (clock == null || clock.CurrentProgress == null) return new System.Windows.Media.RectangleGeometry(new System.Windows.Rect(0, 0, 0, 0));
+        double t = clock.CurrentProgress.Value;
+        if (t <= 0) return new System.Windows.Media.RectangleGeometry(new System.Windows.Rect(0, 0, 0, 0));
+        if (t >= 1.0) return new System.Windows.Media.RectangleGeometry(new System.Windows.Rect(0, 0, _cx * 2, _cy * 2));
+        double angle = t * 2.0 * Math.PI;
+        double ex = _cx + _r * Math.Cos(angle);
+        double ey = _cy + _r * Math.Sin(angle);
+        bool isLarge = angle > Math.PI;
+        var startPt = new System.Windows.Point(_cx + _r, _cy);
+        var arcPt = new System.Windows.Point(ex, ey);
+        var segs = new System.Windows.Media.PathSegmentCollection();
+        segs.Add(new System.Windows.Media.ArcSegment(arcPt, new System.Windows.Size(_r, _r), 0, isLarge, System.Windows.Media.SweepDirection.Clockwise, true));
+        segs.Add(new System.Windows.Media.LineSegment(new System.Windows.Point(_cx, _cy), true));
+        var fig = new System.Windows.Media.PathFigure(startPt, segs, true);
+        return new System.Windows.Media.PathGeometry(new[] { fig });
     }
 }
 

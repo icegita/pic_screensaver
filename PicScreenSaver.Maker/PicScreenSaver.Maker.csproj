@@ -15,6 +15,7 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="..\img\icon.png" CopyToOutputDirectory="PreserveNewest" Link="img\icon.png" />
     <Content Include="..\img\pic1.jpg" CopyToOutputDirectory="PreserveNewest" Link="img\pic1.jpg" />
     <Content Include="..\img\pic2.jpg" CopyToOutputDirectory="PreserveNewest" Link="img\pic2.jpg" />
   </ItemGroup>

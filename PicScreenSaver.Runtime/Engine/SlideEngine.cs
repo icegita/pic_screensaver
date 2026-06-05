@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -24,11 +26,14 @@ namespace PicScreenSaver.Runtime.Engine
         private readonly Image _incomingImage;
 
         private EngineState _state = EngineState.Idle;
-        private int _currentIndex;
-        private int _nextIndex;
+        private bool _inTransition = false;
+        private int _posInOrder;        // index into _playOrder
         private int _imageCount;
+        private int[] _playOrder;       // shuffled or sequential playback sequence
         private byte[][] _imageCache;
         private bool _isPreloading;
+
+        private static readonly Random _rng = new Random();
 
         public event Action<int, int> ImageChanged;
 
@@ -44,6 +49,20 @@ namespace PicScreenSaver.Runtime.Engine
             for (int i = 0; i < _imageCount; i++)
                 _imageCache[i] = null;
 
+            // 构建播放顺序
+            _playOrder = Enumerable.Range(0, _imageCount).ToArray();
+            if (config.ShuffleImages)
+            {
+                // Fisher-Yates shuffle
+                for (int i = _playOrder.Length - 1; i > 0; i--)
+                {
+                    int j = _rng.Next(i + 1);
+                    int tmp = _playOrder[i];
+                    _playOrder[i] = _playOrder[j];
+                    _playOrder[j] = tmp;
+                }
+            }
+
             _displayTimer = new DispatcherTimer();
             _displayTimer.Tick += DisplayTimer_Tick;
         }
@@ -52,10 +71,11 @@ namespace PicScreenSaver.Runtime.Engine
         {
             if (_imageCount == 0) return;
 
-            _currentIndex = 0;
-            _nextIndex = 1;
+            _posInOrder = 0;
+            int firstIndex = _playOrder[0];
+            int secondIndex = _imageCount > 1 ? _playOrder[1 % _imageCount] : firstIndex;
 
-            LoadAndDisplayImage(_outgoingImage, _currentIndex);
+            LoadAndDisplayImage(_outgoingImage, firstIndex);
             _outgoingImage.Opacity = 1.0;
             _incomingImage.Opacity = 0.0;
 
@@ -63,13 +83,15 @@ namespace PicScreenSaver.Runtime.Engine
             _displayTimer.Interval = TimeSpan.FromSeconds(_config.DisplayDuration);
             _displayTimer.Start();
 
-            PreloadNext();
+            if (_imageCount > 1)
+                PreloadNext(secondIndex);
         }
 
         public void Stop()
         {
             _displayTimer.Stop();
             _state = EngineState.Idle;
+            CleanupEffects();
         }
 
         private void DisplayTimer_Tick(object sender, EventArgs e)
@@ -79,45 +101,66 @@ namespace PicScreenSaver.Runtime.Engine
             if (_state != EngineState.Displaying) return;
             if (_imageCount <= 1) return;
 
-            _state = EngineState.Transitioning;
             PerformTransition();
         }
 
         private void PerformTransition()
         {
-            LoadAndDisplayImage(_incomingImage, _nextIndex);
+            if (_inTransition) return;
+            _inTransition = true;
+
+            int nextImageIndex = _playOrder[(_posInOrder + 1) % _imageCount];
+            LoadAndDisplayImage(_incomingImage, nextImageIndex);
 
             var transition = _transitionManager.Next();
             var storyboard = transition.Build(_outgoingImage, _incomingImage, _config.TransitionDuration);
 
             storyboard.Completed += (s, e) =>
             {
+                _inTransition = false;
                 _outgoingImage.Source = _incomingImage.Source;
                 _outgoingImage.Opacity = 1.0;
                 _incomingImage.Opacity = 0.0;
                 ResetTransforms(_outgoingImage);
                 ResetTransforms(_incomingImage);
+                CleanupEffects();
 
-                _currentIndex = _nextIndex;
-                _nextIndex = (_nextIndex + 1) % _imageCount;
+                _posInOrder = (_posInOrder + 1) % _imageCount;
+                int nextPos = (_posInOrder + 1) % _imageCount;
+                int preloadIdx = _playOrder[nextPos];
 
                 _state = EngineState.Displaying;
                 _displayTimer.Interval = TimeSpan.FromSeconds(_config.DisplayDuration);
                 _displayTimer.Start();
 
-                PreloadNext();
+                PreloadNext(preloadIdx);
 
-                ImageChanged?.Invoke(_currentIndex, _nextIndex);
+                int currentRealIndex = _playOrder[_posInOrder];
+                int nextRealIndex = _playOrder[nextPos];
+                ImageChanged?.Invoke(currentRealIndex, nextRealIndex);
             };
 
             _state = EngineState.Transitioning;
             storyboard.Begin();
         }
 
+        private static readonly BitmapSource _blackPlaceholder;
+
+        static SlideEngine()
+        {
+            // 1x1 黑色占位图，用于图片加载失败时的后备
+            _blackPlaceholder = new WriteableBitmap(1, 1, 96, 96, PixelFormats.Bgra32, null);
+            _blackPlaceholder.Freeze();
+        }
+
         private void LoadAndDisplayImage(Image image, int index)
         {
             var bytes = _imageCache[index] ?? ResourceLoader.GetImageBytes(index);
-            if (bytes == null) return;
+            if (bytes == null)
+            {
+                image.Source = _blackPlaceholder;
+                return;
+            }
 
             var bitmap = new BitmapImage();
             using (var ms = new System.IO.MemoryStream(bytes))
@@ -131,13 +174,13 @@ namespace PicScreenSaver.Runtime.Engine
             image.Source = bitmap;
         }
 
-        private void PreloadNext()
+        private void PreloadNext(int imageIndex)
         {
             if (_isPreloading) return;
             if (_imageCount <= 1) return;
 
             _isPreloading = true;
-            int preloadIndex = _nextIndex;
+            int preloadIndex = imageIndex;
 
             Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() =>
             {
@@ -158,7 +201,27 @@ namespace PicScreenSaver.Runtime.Engine
         {
             element.RenderTransform = null;
             element.Clip = null;
+            element.Effect = null;
             Panel.SetZIndex(element, 0);
+        }
+
+        /// <summary>
+        /// 清理过渡特效可能遗留的动态元素（如 FadeWhite 的白色遮罩 Rectangle）
+        /// </summary>
+        private void CleanupEffects()
+        {
+            var parent = _outgoingImage.Parent as Panel;
+            if (parent == null) return;
+
+            // 移除动态添加的 Rectangle 叠加层（FadeWhite 等留下的）
+            var toRemove = new List<UIElement>();
+            foreach (var child in parent.Children)
+            {
+                if (child is System.Windows.Shapes.Rectangle && child != _outgoingImage && child != _incomingImage)
+                    toRemove.Add((UIElement)child);
+            }
+            foreach (var item in toRemove)
+                parent.Children.Remove(item);
         }
     }
 }

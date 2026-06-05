@@ -45,10 +45,10 @@ namespace PicScreenSaver.Runtime.Engine.Transitions
 
         private Storyboard BuildWipeLeft(FrameworkElement outgoing, FrameworkElement incoming, double duration)
         {
-            var sb = new Storyboard();
+            var sb = new Storyboard(); sb.Duration = new Duration(TimeSpan.FromSeconds(duration));
             var time = TimeSpan.FromSeconds(duration);
-            double w = SystemParameters.WorkArea.Width;
-            double h = SystemParameters.WorkArea.Height;
+            double w = outgoing.ActualWidth;
+            double h = outgoing.ActualHeight;
 
             incoming.Clip = new RectangleGeometry(new Rect(0, 0, 0, h));
             incoming.Opacity = 1.0;
@@ -68,10 +68,10 @@ namespace PicScreenSaver.Runtime.Engine.Transitions
 
         private Storyboard BuildWipeRight(FrameworkElement outgoing, FrameworkElement incoming, double duration)
         {
-            var sb = new Storyboard();
+            var sb = new Storyboard(); sb.Duration = new Duration(TimeSpan.FromSeconds(duration));
             var time = TimeSpan.FromSeconds(duration);
-            double w = SystemParameters.WorkArea.Width;
-            double h = SystemParameters.WorkArea.Height;
+            double w = outgoing.ActualWidth;
+            double h = outgoing.ActualHeight;
 
             incoming.Clip = new RectangleGeometry(new Rect(w, 0, 0, h));
             incoming.Opacity = 1.0;
@@ -91,10 +91,10 @@ namespace PicScreenSaver.Runtime.Engine.Transitions
 
         private Storyboard BuildWipeUp(FrameworkElement outgoing, FrameworkElement incoming, double duration)
         {
-            var sb = new Storyboard();
+            var sb = new Storyboard(); sb.Duration = new Duration(TimeSpan.FromSeconds(duration));
             var time = TimeSpan.FromSeconds(duration);
-            double w = SystemParameters.WorkArea.Width;
-            double h = SystemParameters.WorkArea.Height;
+            double w = outgoing.ActualWidth;
+            double h = outgoing.ActualHeight;
 
             incoming.Clip = new RectangleGeometry(new Rect(0, 0, w, 0));
             incoming.Opacity = 1.0;
@@ -114,10 +114,10 @@ namespace PicScreenSaver.Runtime.Engine.Transitions
 
         private Storyboard BuildWipeDown(FrameworkElement outgoing, FrameworkElement incoming, double duration)
         {
-            var sb = new Storyboard();
+            var sb = new Storyboard(); sb.Duration = new Duration(TimeSpan.FromSeconds(duration));
             var time = TimeSpan.FromSeconds(duration);
-            double w = SystemParameters.WorkArea.Width;
-            double h = SystemParameters.WorkArea.Height;
+            double w = outgoing.ActualWidth;
+            double h = outgoing.ActualHeight;
 
             incoming.Clip = new RectangleGeometry(new Rect(0, h, w, 0));
             incoming.Opacity = 1.0;

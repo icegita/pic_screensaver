@@ -31,6 +31,7 @@ namespace PicScreenSaver.Runtime
 
         public static ScreensaverConfig LoadConfig()
         {
+            // 先读本地 AppData（设置页保存的），没有则用嵌入配置
             string configPath = GetConfigFilePath();
             if (File.Exists(configPath))
             {
