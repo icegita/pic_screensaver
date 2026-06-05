@@ -31,6 +31,23 @@ namespace PicScreenSaver.Runtime
 
         public static ScreensaverConfig LoadConfig()
         {
+            string configPath = GetConfigFilePath();
+            if (File.Exists(configPath))
+            {
+                try
+                {
+                    string fileJson = File.ReadAllText(configPath, Encoding.UTF8);
+                    var fileConfig = DeserializeConfig(fileJson);
+                    if (fileConfig != null) return fileConfig;
+                }
+                catch { }
+            }
+
+            return LoadConfigFromResources();
+        }
+
+        private static ScreensaverConfig LoadConfigFromResources()
+        {
             try
             {
                 var hModule = GetModuleHandle(null);
@@ -54,6 +71,34 @@ namespace PicScreenSaver.Runtime
             {
                 return null;
             }
+        }
+
+        public static void SaveConfig(ScreensaverConfig config)
+        {
+            try
+            {
+                string configPath = GetConfigFilePath();
+                string dir = Path.GetDirectoryName(configPath);
+                if (!Directory.Exists(dir))
+                    Directory.CreateDirectory(dir);
+
+                using (var ms = new MemoryStream())
+                {
+                    var serializer = new DataContractJsonSerializer(typeof(ScreensaverConfig));
+                    serializer.WriteObject(ms, config);
+                    string json = Encoding.UTF8.GetString(ms.ToArray());
+                    File.WriteAllText(configPath, json, Encoding.UTF8);
+                }
+            }
+            catch { }
+        }
+
+        private static string GetConfigFilePath()
+        {
+            string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            string scrName = Path.GetFileNameWithoutExtension(
+                System.Reflection.Assembly.GetExecutingAssembly().Location);
+            return Path.Combine(appData, "PicScreenSaver", scrName + "_config.json");
         }
 
         public static byte[] GetImageBytes(int index)

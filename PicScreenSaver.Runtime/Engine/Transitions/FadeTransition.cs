@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Shapes;
 
 namespace PicScreenSaver.Runtime.Engine.Transitions
 {
@@ -88,7 +89,58 @@ namespace PicScreenSaver.Runtime.Engine.Transitions
 
         private Storyboard BuildFadeWhite(FrameworkElement outgoing, FrameworkElement incoming, double duration)
         {
-            return BuildFadeBlack(outgoing, incoming, duration);
+            var sb = new Storyboard();
+            var halfTime = TimeSpan.FromSeconds(duration / 2.0);
+
+            var whiteOverlay = new Rectangle
+            {
+                Fill = Brushes.White,
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                VerticalAlignment = VerticalAlignment.Stretch,
+                Opacity = 0
+            };
+
+            var parent = outgoing.Parent as Panel;
+            if (parent != null)
+                parent.Children.Insert(1, whiteOverlay);
+
+            Panel.SetZIndex(outgoing, 0);
+            Panel.SetZIndex(whiteOverlay, 1);
+            Panel.SetZIndex(incoming, 2);
+
+            outgoing.Opacity = 1.0;
+            incoming.Opacity = 0.0;
+
+            var fadeOut = new DoubleAnimation(1.0, 0.0, new Duration(halfTime));
+            Storyboard.SetTarget(fadeOut, outgoing);
+            Storyboard.SetTargetProperty(fadeOut, new PropertyPath(UIElement.OpacityProperty));
+
+            var showWhite = new DoubleAnimation(0.0, 1.0, new Duration(halfTime));
+            Storyboard.SetTarget(showWhite, whiteOverlay);
+            Storyboard.SetTargetProperty(showWhite, new PropertyPath(UIElement.OpacityProperty));
+
+            var hideWhite = new DoubleAnimation(1.0, 0.0, new Duration(halfTime));
+            Storyboard.SetTarget(hideWhite, whiteOverlay);
+            Storyboard.SetTargetProperty(hideWhite, new PropertyPath(UIElement.OpacityProperty));
+            hideWhite.BeginTime = halfTime;
+
+            var fadeIn = new DoubleAnimation(0.0, 1.0, new Duration(halfTime));
+            Storyboard.SetTarget(fadeIn, incoming);
+            Storyboard.SetTargetProperty(fadeIn, new PropertyPath(UIElement.OpacityProperty));
+            fadeIn.BeginTime = halfTime;
+
+            sb.Children.Add(fadeOut);
+            sb.Children.Add(showWhite);
+            sb.Children.Add(hideWhite);
+            sb.Children.Add(fadeIn);
+
+            sb.Completed += (s, e) =>
+            {
+                if (parent != null && parent.Children.Contains(whiteOverlay))
+                    parent.Children.Remove(whiteOverlay);
+            };
+
+            return sb;
         }
 
         private Storyboard BuildCrossFade(FrameworkElement outgoing, FrameworkElement incoming, double duration)

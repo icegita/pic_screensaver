@@ -134,65 +134,63 @@ namespace PicScreenSaver.Runtime
         private void InstallButton_Click(object sender, RoutedEventArgs e)
         {
             string scrPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+            string myName = Path.GetFileName(scrPath);
             string systemDir = System.Environment.GetFolderPath(System.Environment.SpecialFolder.System);
-            string destPath = Path.Combine(systemDir, Path.GetFileName(scrPath));
+            string destPath = Path.Combine(systemDir, myName);
 
             try
             {
-                File.Copy(scrPath, destPath, true);
-                MessageBox.Show(
-                    $"屏保已安装到：\n{destPath}\n\n请在桌面右键 → 个性化 → 锁屏界面 → 屏幕保护程序 中选择。",
-                    "PicScreenSaver", MessageBoxButton.OK, MessageBoxImage.Information);
-                Close();
-            }
-            catch (System.UnauthorizedAccessException)
-            {
-                try
+                var psi = new ProcessStartInfo
                 {
-                    var psi = new ProcessStartInfo
-                    {
-                        FileName = "cmd.exe",
-                        Arguments = $"/c copy \"{scrPath}\" \"{destPath}\" /Y",
-                        Verb = "runas",
-                        UseShellExecute = true,
-                        CreateNoWindow = true,
-                        WindowStyle = ProcessWindowStyle.Hidden
-                    };
-                    var proc = Process.Start(psi);
-                    proc.WaitForExit(10000);
-
-                    if (proc.ExitCode == 0)
-                    {
-                        MessageBox.Show(
-                            $"屏保已安装到：\n{destPath}\n\n请在桌面右键 → 个性化 → 锁屏界面 → 屏幕保护程序 中选择。",
-                            "PicScreenSaver", MessageBoxButton.OK, MessageBoxImage.Information);
-                        Close();
-                    }
-                    else
-                    {
-                        MessageBox.Show(
-                            $"安装失败，请手动将 .scr 复制到：\n{systemDir}",
-                            "PicScreenSaver", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    }
+                    FileName = "cmd.exe",
+                    Arguments = $"/c copy /Y /B \"{scrPath}\" \"{destPath}\"",
+                    Verb = "runas",
+                    UseShellExecute = true,
+                    CreateNoWindow = true,
+                    WindowStyle = ProcessWindowStyle.Hidden
+                };
+                var proc = Process.Start(psi);
+                if (proc == null)
+                {
+                    MessageBox.Show("需要管理员权限来安装屏保。");
+                    return;
                 }
-                catch
+                proc.WaitForExit(15000);
+
+                if (proc.ExitCode == 0)
                 {
-                    MessageBox.Show(
-                        $"安装需要管理员权限。\n\n请手动将 .scr 复制到：\n{systemDir}",
-                        "PicScreenSaver", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    InstallBtn.Visibility = Visibility.Collapsed;
+                    Close();
+                }
+                else
+                {
+                    MessageBox.Show($"安装失败 (code={proc.ExitCode})。\n请手动复制到：\n{systemDir}");
                 }
             }
             catch (System.Exception ex)
             {
-                MessageBox.Show(
-                    $"安装失败：\n{ex.Message}",
-                    "PicScreenSaver", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"安装失败：{ex.Message}");
             }
         }
 
         private void OkButton_Click(object sender, RoutedEventArgs e)
         {
+            SaveCurrentConfig();
             Close();
+        }
+
+        private void SaveCurrentConfig()
+        {
+            if (_config == null) return;
+
+            _config.DisplayDuration = DisplayDurationSlider.Value;
+            _config.TransitionDuration = TransitionDurationSlider.Value;
+            _config.ShuffleImages = OrderRandom.IsChecked == true;
+            _config.SelectedEffects = _selectedEffects.Count > 0
+                ? new System.Collections.Generic.List<string>(_selectedEffects).ToArray()
+                : new[] { "Fade" };
+
+            ResourceLoader.SaveConfig(_config);
         }
     }
 }

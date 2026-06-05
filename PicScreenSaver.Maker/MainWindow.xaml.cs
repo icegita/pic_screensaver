@@ -224,9 +224,31 @@ namespace PicScreenSaver.Maker
                 case "FadeWhite":
                     EffectPreviewImageA.Opacity = 1;
                     EffectPreviewImageB.Opacity = 0;
+                    var fadeWhiteOverlay = new System.Windows.Shapes.Rectangle
+                    {
+                        Fill = System.Windows.Media.Brushes.White,
+                        HorizontalAlignment = HorizontalAlignment.Stretch,
+                        VerticalAlignment = VerticalAlignment.Stretch,
+                        Opacity = 0
+                    };
+                    var previewParent = EffectPreviewImageA.Parent as Panel;
+                    if (previewParent != null)
+                        previewParent.Children.Insert(1, fadeWhiteOverlay);
+                    Panel.SetZIndex(EffectPreviewImageA, 0);
+                    Panel.SetZIndex(fadeWhiteOverlay, 1);
+                    Panel.SetZIndex(EffectPreviewImageB, 2);
                     sb.Children.Add(CreateDoubleAnimation(EffectPreviewImageA, "Opacity", 1, 0, TimeSpan.FromSeconds(0.6)));
+                    sb.Children.Add(CreateDoubleAnimation(fadeWhiteOverlay, "Opacity", 0, 1, TimeSpan.FromSeconds(0.6)));
+                    var hideWhiteAnim = CreateDoubleAnimation(fadeWhiteOverlay, "Opacity", 1, 0, TimeSpan.FromSeconds(0.6));
+                    ((DoubleAnimation)hideWhiteAnim).BeginTime = TimeSpan.FromSeconds(0.6);
+                    sb.Children.Add(hideWhiteAnim);
                     sb.Children.Add(CreateDoubleAnimation(EffectPreviewImageB, "Opacity", 0, 1, TimeSpan.FromSeconds(0.6)));
-                    ((DoubleAnimation)sb.Children[1]).BeginTime = TimeSpan.FromSeconds(0.6);
+                    ((DoubleAnimation)sb.Children[3]).BeginTime = TimeSpan.FromSeconds(0.6);
+                    sb.Completed += (s2, e2) =>
+                    {
+                        if (previewParent != null && previewParent.Children.Contains(fadeWhiteOverlay))
+                            previewParent.Children.Remove(fadeWhiteOverlay);
+                    };
                     break;
 
                 case "ZoomInFade":
@@ -922,8 +944,25 @@ namespace PicScreenSaver.Maker
         {
             string system32 = Environment.GetFolderPath(Environment.SpecialFolder.System);
             string destPath = Path.Combine(system32, Path.GetFileName(scrPath));
-            File.Copy(scrPath, destPath, true);
-            // 不再调用 SystemParametersInfo——它会触发屏保设置面板打开并创建预览进程
+            try
+            {
+                var psi = new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = "cmd.exe",
+                    Arguments = $"/c copy /Y /B \"{scrPath}\" \"{destPath}\"",
+                    Verb = "runas",
+                    UseShellExecute = true,
+                    CreateNoWindow = true,
+                    WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden
+                };
+                var proc = System.Diagnostics.Process.Start(psi);
+                if (proc != null) proc.WaitForExit(15000);
+            }
+            catch
+            {
+                try { File.Copy(scrPath, destPath, true); }
+                catch { }
+            }
         }
 
         private void OpenProject_Click(object sender, RoutedEventArgs e)
@@ -953,6 +992,8 @@ namespace PicScreenSaver.Maker
                 SaverNameInput.Text = project.SaverName ?? "MyScreensaver";
                 if (project.ShuffleImages) OrderRandom.IsChecked = true;
                 else OrderSequential.IsChecked = true;
+                if (project.AutoInstall) InstallYes.IsChecked = true;
+                else InstallNo.IsChecked = true;
 
                 // 恢复勾选效果
                 _selectedEffects.Clear();

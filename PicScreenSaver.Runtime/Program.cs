@@ -23,9 +23,16 @@ namespace PicScreenSaver.Runtime
             string raw = args.Length > 0 ? args[0].ToLower().TrimStart('/', '-') : "";
             string command = raw.Length > 0 ? raw.Split(':')[0].Substring(0, 1) : "";
 
-            // 无参数：直接弹出设置窗口（Windows 对桌面 .scr 右键不传参）
+            // 无参数：直接弹出设置窗口
+            // 但若同名文件已在 System32 中（右键"安装"已复制完毕），静默退出
             if (command == "")
             {
+                string myPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+                string sysDir = System.Environment.GetFolderPath(System.Environment.SpecialFolder.System);
+                string sysCopy = System.IO.Path.Combine(sysDir, System.IO.Path.GetFileName(myPath));
+                if (System.IO.File.Exists(sysCopy) && !myPath.StartsWith(sysDir, StringComparison.OrdinalIgnoreCase))
+                    return;
+
                 ShowConfigDialog(config);
                 return;
             }
@@ -48,7 +55,7 @@ namespace PicScreenSaver.Runtime
                 else
                     RunScreensaver(false, config);
             }
-            else if (command == "c")
+            else if (command == "c" || command == "i")
             {
                 ShowConfigDialog(config);
             }

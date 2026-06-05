@@ -16,6 +16,7 @@ namespace PicScreenSaver.Runtime
         private DispatcherTimer _exitMonitor;
         private bool _isExiting = false;
         private Point _lastMousePos;
+        private IntPtr _previewParentHandle;
 
         public ScreensaverWindow(ScreensaverConfig config, bool isPreview)
             : this(config, isPreview, IntPtr.Zero)
@@ -30,7 +31,9 @@ namespace PicScreenSaver.Runtime
 
             if (_isPreview && parentHandle != IntPtr.Zero)
             {
-                SetupPreview(parentHandle);
+                SetupPreviewStyle();
+                _previewParentHandle = parentHandle;
+                SourceInitialized += OnPreviewSourceInitialized;
             }
             else
             {
@@ -54,29 +57,32 @@ namespace PicScreenSaver.Runtime
             Height = SystemParameters.PrimaryScreenHeight;
         }
 
-        private void SetupPreview(IntPtr parentHandle)
+        private void SetupPreviewStyle()
         {
             WindowState = WindowState.Normal;
             WindowStyle = WindowStyle.None;
             ResizeMode = ResizeMode.NoResize;
+            AllowsTransparency = false;
             ShowInTaskbar = false;
             Topmost = false;
+        }
 
+        private void OnPreviewSourceInitialized(object sender, EventArgs e)
+        {
             var helper = new WindowInteropHelper(this);
-            SetParent(helper.Handle, parentHandle);
+            SetParent(helper.Handle, _previewParentHandle);
 
             var parentRect = new RECT();
-            GetClientRect(parentHandle, out parentRect);
+            GetClientRect(_previewParentHandle, out parentRect);
             Width = parentRect.Right - parentRect.Left;
             Height = parentRect.Bottom - parentRect.Top;
             Left = 0;
             Top = 0;
 
-            // 预览模式：每秒检测父窗口是否还存在
             var parentTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
             parentTimer.Tick += (s, args) =>
             {
-                if (!IsWindow(parentHandle) || !IsWindowVisible(parentHandle))
+                if (!IsWindow(_previewParentHandle) || !IsWindowVisible(_previewParentHandle))
                 {
                     parentTimer.Stop();
                     ExitScreensaver();

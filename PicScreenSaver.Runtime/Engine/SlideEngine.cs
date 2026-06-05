@@ -116,7 +116,7 @@ namespace PicScreenSaver.Runtime.Engine
 
         private void LoadAndDisplayImage(Image image, int index)
         {
-            var bytes = ResourceLoader.GetImageBytes(index);
+            var bytes = _imageCache[index] ?? ResourceLoader.GetImageBytes(index);
             if (bytes == null) return;
 
             var bitmap = new BitmapImage();
