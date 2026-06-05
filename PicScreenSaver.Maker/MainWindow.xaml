@@ -20,7 +20,7 @@
             <Setter Property="Height" Value="42"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="FontWeight" Value="Medium"/>
-            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontFamily" Value="Noto Sans SC"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="GroupName" Value="Tabs"/>
             <Setter Property="Template">
@@ -49,7 +49,7 @@
         <Style x:Key="EffectCheckBoxStyle" TargetType="CheckBox">
             <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
             <Setter Property="FontSize" Value="13"/>
-            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontFamily" Value="Noto Sans SC"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Margin" Value="0,0,0,0"/>
             <Setter Property="Template">
@@ -87,7 +87,7 @@
         <Style x:Key="ToggleRadioStyle" TargetType="RadioButton">
             <Setter Property="Foreground" Value="{DynamicResource Text2Brush}"/>
             <Setter Property="FontSize" Value="13"/>
-            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontFamily" Value="Noto Sans SC"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -191,13 +191,13 @@
                 Padding="16,8" Opacity="0" IsHitTestVisible="False"
                 Effect="{DynamicResource ToastShadow}">
             <TextBlock x:Name="ToastText" Text="" FontSize="12" FontWeight="Medium"
-                       Foreground="White" FontFamily="Segoe UI"/>
+                       Foreground="White" FontFamily="Noto Sans SC"/>
         </Border>
 
         <Border x:Name="TitleBarBg" Grid.Row="0" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1">
             <Grid>
                 <TextBlock x:Name="TitleText" Text="PicScreenSaver" HorizontalAlignment="Center" VerticalAlignment="Center"
-                           FontSize="12.5" FontWeight="Medium" Foreground="{DynamicResource Text2Brush}" FontFamily="Segoe UI"/>
+                           FontSize="12.5" FontWeight="Medium" Foreground="{DynamicResource Text2Brush}" FontFamily="Noto Sans SC"/>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
                     <Button x:Name="ThemeToggleBtn" Width="36" Height="44"
                             Background="Transparent" Foreground="{DynamicResource Text2Brush}" BorderThickness="0"
@@ -239,17 +239,17 @@
                             Click="OpenProject_Click"
                             Background="{DynamicResource Surface2Brush}" Foreground="{DynamicResource Text2Brush}" BorderBrush="{DynamicResource BorderBrush}"
                             BorderThickness="1" Padding="14,0" Height="30" FontSize="12"
-                            Style="{StaticResource RoundedButtonStyle}" FontFamily="Segoe UI" Cursor="Hand" Margin="0,0,6,0"/>
+                            Style="{StaticResource RoundedButtonStyle}" FontFamily="Noto Sans SC" Cursor="Hand" Margin="0,0,6,0"/>
                     <Button x:Name="SaveBtn" Content="&#x4FDD;&#x5B58;"
                             Click="SaveProject_Click"
                             Background="{DynamicResource Surface2Brush}" Foreground="{DynamicResource Text2Brush}" BorderBrush="{DynamicResource BorderBrush}"
                             BorderThickness="1" Padding="14,0" Height="30" FontSize="12"
-                            Style="{StaticResource RoundedButtonStyle}" FontFamily="Segoe UI" Cursor="Hand" Margin="0,0,6,0"/>
+                            Style="{StaticResource RoundedButtonStyle}" FontFamily="Noto Sans SC" Cursor="Hand" Margin="0,0,6,0"/>
                     <Button x:Name="GenerateBtn" Content="&#x751F;&#x6210; .scr"
                             Click="GenerateBtn_Click"
                             Background="{DynamicResource AccentBrush}" Foreground="{DynamicResource WhiteBrush}" BorderThickness="0"
                             Style="{StaticResource RoundedButtonStyle}"
-                            FontSize="12.5" FontWeight="SemiBold" FontFamily="Segoe UI"
+                            FontSize="12.5" FontWeight="SemiBold" FontFamily="Noto Sans SC"
                             Padding="18,0" Height="30" Cursor="Hand"/>
                 </StackPanel>
             </Grid>
@@ -272,24 +272,24 @@
                                     DockPanel.Dock="Left"
                                     Background="{DynamicResource Surface2Brush}" Foreground="{DynamicResource Text2Brush}" BorderBrush="{DynamicResource BorderBrush}"
                                     BorderThickness="1" Padding="12,0" Height="30" FontSize="12" Style="{StaticResource RoundedButtonStyle}"
-                                    FontFamily="Segoe UI" Cursor="Hand"/>
+                                    FontFamily="Noto Sans SC" Cursor="Hand"/>
                             <Separator Width="1" DockPanel.Dock="Left" Background="{DynamicResource BorderBrush}" Margin="8,4"/>
                             <Button Content="&#x524D;&#x79FB;" Click="MoveUp_Click"
                                     DockPanel.Dock="Left"
                                     Background="{DynamicResource Surface2Brush}" Foreground="{DynamicResource Text2Brush}" BorderBrush="{DynamicResource BorderBrush}"
                                     BorderThickness="1" Padding="12,0" Height="30" FontSize="12" Style="{StaticResource RoundedButtonStyle}"
-                                    FontFamily="Segoe UI" Cursor="Hand"/>
+                                    FontFamily="Noto Sans SC" Cursor="Hand"/>
                             <Button Content="&#x540E;&#x79FB;" Click="MoveDown_Click"
                                     DockPanel.Dock="Left"
                                     Background="{DynamicResource Surface2Brush}" Foreground="{DynamicResource Text2Brush}" BorderBrush="{DynamicResource BorderBrush}"
                                     BorderThickness="1" Padding="12,0" Height="30" FontSize="12" Style="{StaticResource RoundedButtonStyle}"
-                                    FontFamily="Segoe UI" Cursor="Hand"/>
+                                    FontFamily="Noto Sans SC" Cursor="Hand"/>
                             <Separator Width="1" DockPanel.Dock="Left" Background="{DynamicResource BorderBrush}" Margin="8,4"/>
                             <Button Content="&#x5168;&#x90E8;&#x79FB;&#x9664;" Click="RemoveAllImages_Click"
                                     DockPanel.Dock="Left"
                                     Background="{DynamicResource Surface2Brush}" Foreground="{DynamicResource DangerBrush}" BorderBrush="{DynamicResource DangerBgBrush}"
                                     BorderThickness="1" Padding="12,0" Height="30" FontSize="12" Style="{StaticResource RoundedButtonStyle}"
-                                    FontFamily="Segoe UI" Cursor="Hand"/>
+                                    FontFamily="Noto Sans SC" Cursor="Hand"/>
                             <TextBlock x:Name="ImageCountText" VerticalAlignment="Center"
                                        Margin="12,0,0,0" FontSize="12"
                                        Foreground="{DynamicResource Text3Brush}" FontFamily="Consolas"
@@ -312,35 +312,35 @@
                             </Grid.RowDefinitions>
                             <Border Grid.Row="0" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1">
                                 <TextBlock Text="&#x9884;&#x89C8;" Padding="16,14,16,10"
-                                           FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource Text3Brush}" FontFamily="Segoe UI"/>
+                                           FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC"/>
                             </Border>
                             <Border Grid.Row="1" Background="{DynamicResource Surface2Brush}" ClipToBounds="True">
                                 <Image x:Name="PreviewImage" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"/>
                             </Border>
                             <Border Grid.Row="2" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="16,14,16,10">
                                 <StackPanel>
-                                    <TextBlock Text="&#x6587;&#x4EF6;&#x540D;" FontSize="10.5" Foreground="{DynamicResource Text3Brush}" FontFamily="Segoe UI"/>
+                                    <TextBlock Text="&#x6587;&#x4EF6;&#x540D;" FontSize="10.5" Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC"/>
                                     <TextBlock x:Name="PreviewFileName" FontSize="11" Foreground="{DynamicResource TextBrush}" FontFamily="Consolas" Margin="0,2,0,0"/>
                                 </StackPanel>
                             </Border>
                             <Border Grid.Row="3" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="16,14,16,10">
                                 <StackPanel>
-                                    <TextBlock Text="&#x539F;&#x59CB;" FontSize="10.5" Foreground="{DynamicResource Text3Brush}" FontFamily="Segoe UI"/>
+                                    <TextBlock Text="&#x539F;&#x59CB;" FontSize="10.5" Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC"/>
                                     <TextBlock x:Name="PreviewResolution" FontSize="11" Foreground="{DynamicResource TextBrush}" FontFamily="Consolas" Margin="0,2,0,0"/>
                                     <TextBlock x:Name="PreviewOriginalSize" FontSize="11" Foreground="{DynamicResource TextBrush}" FontFamily="Consolas" Margin="0,1,0,0"/>
                                 </StackPanel>
                             </Border>
                             <Border Grid.Row="4" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="16,14,16,10">
                                 <StackPanel>
-                                    <TextBlock Text="&#x538B;&#x7F29;&#x540E;" FontSize="10.5" Foreground="{DynamicResource Text3Brush}" FontFamily="Segoe UI"/>
+                                    <TextBlock Text="&#x538B;&#x7F29;&#x540E;" FontSize="10.5" Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC"/>
                                     <TextBlock x:Name="PreviewCompressedSize" FontSize="11" Foreground="{DynamicResource SuccessBrush}" FontFamily="Consolas" Margin="0,2,0,0"/>
-                                    <TextBlock Text="&#x538B;&#x7F29;&#x7387;" FontSize="10.5" Foreground="{DynamicResource Text3Brush}" FontFamily="Segoe UI" Margin="0,4,0,0"/>
+                                    <TextBlock Text="&#x538B;&#x7F29;&#x7387;" FontSize="10.5" Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC" Margin="0,4,0,0"/>
                                     <TextBlock x:Name="PreviewCompressionRatio" FontSize="11" Foreground="{DynamicResource SuccessBrush}" FontFamily="Consolas" Margin="0,1,0,0"/>
                                 </StackPanel>
                             </Border>
                             <Border Grid.Row="5" Padding="16,14">
                                 <StackPanel>
-                                    <TextBlock Text="&#x64AD;&#x653E;&#x987A;&#x5E8F;" FontSize="10.5" Foreground="{DynamicResource Text3Brush}" FontFamily="Segoe UI" Margin="0,0,0,8"/>
+                                    <TextBlock Text="&#x64AD;&#x653E;&#x987A;&#x5E8F;" FontSize="10.5" Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC" Margin="0,0,0,8"/>
                                     <StackPanel Orientation="Horizontal">
                                         <RadioButton x:Name="OrderSequential" Content="&#x987A;&#x5E8F;" GroupName="PlayOrder" Margin="0,0,12,0" Style="{StaticResource ToggleRadioStyle}"/>
                                         <RadioButton x:Name="OrderRandom" Content="&#x968F;&#x673A;" IsChecked="True" GroupName="PlayOrder" Style="{StaticResource ToggleRadioStyle}"/>
@@ -365,14 +365,14 @@
                         <Border Grid.Row="0" Padding="16,14,16,14" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1">
                             <DockPanel>
                                 <TextBlock Text="&#x6548;&#x679C;" FontSize="11" FontWeight="SemiBold"
-                                           Foreground="{DynamicResource Text3Brush}" FontFamily="Segoe UI" VerticalAlignment="Center"/>
+                                           Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC" VerticalAlignment="Center"/>
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                                     <Button Content="&#x5168;&#x9009;" Click="SelectAllEffects_Click"
                                             Background="{DynamicResource Surface2Brush}" Foreground="{DynamicResource Text3Brush}" BorderBrush="{DynamicResource BorderBrush}"
-                                            BorderThickness="1" Padding="7,2" FontSize="10.5" FontFamily="Segoe UI" Cursor="Hand" Style="{StaticResource RoundedButtonSmall}"/>
+                                            BorderThickness="1" Padding="7,2" FontSize="10.5" FontFamily="Noto Sans SC" Cursor="Hand" Style="{StaticResource RoundedButtonSmall}"/>
                                     <Button Content="&#x6E05;&#x7A7A;" Click="ClearEffects_Click"
                                             Background="{DynamicResource Surface2Brush}" Foreground="{DynamicResource Text3Brush}" BorderBrush="{DynamicResource BorderBrush}"
-                                            BorderThickness="1" Padding="7,2" FontSize="10.5" FontFamily="Segoe UI" Margin="6,0,0,0" Cursor="Hand" Style="{StaticResource RoundedButtonSmall}"/>
+                                            BorderThickness="1" Padding="7,2" FontSize="10.5" FontFamily="Noto Sans SC" Margin="6,0,0,0" Cursor="Hand" Style="{StaticResource RoundedButtonSmall}"/>
                                 </StackPanel>
                             </DockPanel>
                         </Border>
@@ -399,15 +399,15 @@
                         <DockPanel>
                             <StackPanel>
                                 <TextBlock x:Name="SelectedEffectName" Text="Fade" FontSize="13" FontWeight="SemiBold"
-                                           Foreground="{DynamicResource TextBrush}" FontFamily="Segoe UI"/>
+                                           Foreground="{DynamicResource TextBrush}" FontFamily="Noto Sans SC"/>
                                 <TextBlock x:Name="SelectedEffectDesc" Text="" FontSize="11" Foreground="{DynamicResource Text2Brush}"
-                                           FontFamily="Segoe UI" Margin="0,2,0,0"/>
+                                           FontFamily="Noto Sans SC" Margin="0,2,0,0"/>
                             </StackPanel>
                             <StackPanel HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <TextBlock x:Name="SelectedEffectCount" Text="0" FontSize="22" FontWeight="SemiBold"
                                            Foreground="{DynamicResource AccentBrush}" FontFamily="Consolas" HorizontalAlignment="Center"/>
                                 <TextBlock Text="&#x5DF2;&#x9009;" FontSize="10.5" Foreground="{DynamicResource Text3Brush}"
-                                           FontFamily="Segoe UI" Margin="0,1,0,0" HorizontalAlignment="Center"/>
+                                           FontFamily="Noto Sans SC" Margin="0,1,0,0" HorizontalAlignment="Center"/>
                             </StackPanel>
                         </DockPanel>
                     </Border>
@@ -434,18 +434,18 @@
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0">
                                         <TextBlock Text="&#x64AD;&#x653E;&#x65F6;&#x957F;" FontSize="11" FontWeight="SemiBold"
-                                                   Foreground="{DynamicResource Text3Brush}" FontFamily="Segoe UI"/>
+                                                   Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC"/>
                                         <TextBlock Text="&#x6BCF;&#x5F20;&#x56FE;&#x7247;&#x9759;&#x6B62;&#x5C55;&#x793A;&#x7684;&#x65F6;&#x95F4;" FontSize="10.5"
-                                                   Foreground="{DynamicResource Text3Brush}" FontFamily="Segoe UI" Margin="0,1,0,0"/>
+                                                   Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC" Margin="0,1,0,0"/>
                                     </StackPanel>
                                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                        <Button x:Name="DisplayDurationMinusBtn" Width="26" Height="28" Click="DisplayDurationMinus_Click" Cursor="Hand"/>
+                                        <Button x:Name="DisplayDurationMinusBtn" Width="26" Height="28" Click="DisplayDurationMinus_Click" Cursor="Hand" PreviewMouseDown="Btn_MouseDown" PreviewMouseUp="Btn_MouseUp" MouseLeave="Btn_MouseLeave"/>
                                         <Border Background="{DynamicResource Surface2Brush}" CornerRadius="4" BorderThickness="0" Width="46" Height="28" Margin="4,0">
                                             <TextBlock x:Name="DisplayDurationValue" Text="5.0" TextAlignment="Center"
                                                        VerticalAlignment="Center" Foreground="{DynamicResource TextBrush}" FontFamily="Consolas" FontSize="13"/>
                                         </Border>
                                         <TextBlock Text="&#x79D2;" FontSize="11" Foreground="{DynamicResource Text2Brush}" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                                        <Button x:Name="DisplayDurationPlusBtn" Width="26" Height="28" Cursor="Hand" Click="DisplayDurationPlus_Click"/>
+                                        <Button x:Name="DisplayDurationPlusBtn" Width="26" Height="28" Cursor="Hand" Click="DisplayDurationPlus_Click" PreviewMouseDown="Btn_MouseDown" PreviewMouseUp="Btn_MouseUp" MouseLeave="Btn_MouseLeave"/>
                                     </StackPanel>
                                 </Grid>
                             </Border>
@@ -459,18 +459,18 @@
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0">
                                         <TextBlock Text="&#x8FC7;&#x6E21;&#x52A8;&#x753B;&#x65F6;&#x957F;" FontSize="11" FontWeight="SemiBold"
-                                                   Foreground="{DynamicResource Text3Brush}" FontFamily="Segoe UI"/>
+                                                   Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC"/>
                                         <TextBlock Text="&#x5207;&#x6362;&#x52A8;&#x753B;&#x64AD;&#x653E;&#x7684;&#x65F6;&#x95F4;" FontSize="10.5"
-                                                   Foreground="{DynamicResource Text3Brush}" FontFamily="Segoe UI" Margin="0,1,0,0"/>
+                                                   Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC" Margin="0,1,0,0"/>
                                     </StackPanel>
                                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                        <Button x:Name="TransitionDurationMinusBtn" Width="26" Height="28" Click="TransitionDurationMinus_Click" Cursor="Hand"/>
+                                        <Button x:Name="TransitionDurationMinusBtn" Width="26" Height="28" Click="TransitionDurationMinus_Click" Cursor="Hand" PreviewMouseDown="Btn_MouseDown" PreviewMouseUp="Btn_MouseUp" MouseLeave="Btn_MouseLeave"/>
                                         <Border Background="{DynamicResource Surface2Brush}" CornerRadius="4" BorderThickness="0" Width="46" Height="28" Margin="4,0">
                                             <TextBlock x:Name="TransitionDurationValue" Text="1.2" TextAlignment="Center"
                                                        VerticalAlignment="Center" Foreground="{DynamicResource TextBrush}" FontFamily="Consolas" FontSize="13"/>
                                         </Border>
                                         <TextBlock Text="&#x79D2;" FontSize="11" Foreground="{DynamicResource Text2Brush}" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                                        <Button x:Name="TransitionDurationPlusBtn" Width="26" Height="28" Cursor="Hand" Margin="0,0,0,0" Click="TransitionDurationPlus_Click"/>
+                                        <Button x:Name="TransitionDurationPlusBtn" Width="26" Height="28" Cursor="Hand" Margin="0,0,0,0" Click="TransitionDurationPlus_Click" PreviewMouseDown="Btn_MouseDown" PreviewMouseUp="Btn_MouseUp" MouseLeave="Btn_MouseLeave"/>
                                     </StackPanel>
                                 </Grid>
                             </Border>
@@ -485,9 +485,9 @@
                                         </Grid.ColumnDefinitions>
                                         <StackPanel Grid.Column="0">
                                             <TextBlock Text="&#x538B;&#x7F29;&#x8D28;&#x91CF;" FontSize="11" FontWeight="SemiBold"
-                                                       Foreground="{DynamicResource Text3Brush}" FontFamily="Segoe UI"/>
+                                                       Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC"/>
                                             <TextBlock Text="&#x6570;&#x503C;&#x8D8A;&#x4F4E;&#x4F53;&#x79EF;&#x8D8A;&#x5C0F;" FontSize="10.5"
-                                                       Foreground="{DynamicResource Text3Brush}" FontFamily="Segoe UI" Margin="0,1,0,0"/>
+                                                       Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC" Margin="0,1,0,0"/>
                                         </StackPanel>
                                         <TextBlock Grid.Column="1" x:Name="QualityValue" Text="75%" FontSize="14" FontWeight="SemiBold"
                                                    Foreground="{DynamicResource AccentBrush}" FontFamily="Consolas" VerticalAlignment="Center"/>
@@ -517,7 +517,7 @@
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0">
                                         <TextBlock Text="&#x6587;&#x4EF6;&#x4F53;&#x79EF;&#x9884;&#x4F30;" FontSize="11" FontWeight="SemiBold"
-                                                   Foreground="{DynamicResource Text3Brush}" FontFamily="Segoe UI"/>
+                                                   Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC"/>
                                         <TextBlock x:Name="EstimateImagesText" Text="&#x56FE;&#x7247;&#xFF08;0 &#x5F20;&#xFF09;" FontSize="10.5"
                                                    Foreground="{DynamicResource Text3Brush}" FontFamily="Consolas" Margin="0,1,0,0"/>
                                     </StackPanel>
@@ -537,15 +537,15 @@
                     <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="0,0,0,4">
                         <StackPanel>
                             <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="16,14">
-                                <TextBlock Text="&#x8F93;&#x51FA;" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource Text3Brush}" FontFamily="Segoe UI"/>
+                                <TextBlock Text="&#x8F93;&#x51FA;" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC"/>
                             </Border>
 
                             <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="16,14">
                                 <StackPanel>
                                     <TextBlock Text="&#x5C4F;&#x4FDD;&#x540D;&#x79F0;" FontSize="11" FontWeight="SemiBold"
-                                               Foreground="{DynamicResource Text3Brush}" FontFamily="Segoe UI"/>
+                                               Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC"/>
                                     <TextBlock Text="&#x8F93;&#x51FA;&#x6587;&#x4EF6;&#x540D;" FontSize="10.5"
-                                               Foreground="{DynamicResource Text3Brush}" FontFamily="Segoe UI" Margin="0,1,0,8"/>
+                                               Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC" Margin="0,1,0,8"/>
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
@@ -565,7 +565,7 @@
                             <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="16,14">
                                 <StackPanel>
                                     <TextBlock Text="&#x8F93;&#x51FA;&#x8DEF;&#x5F84;" FontSize="11" FontWeight="SemiBold"
-                                               Foreground="{DynamicResource Text3Brush}" FontFamily="Segoe UI" Margin="0,0,0,8"/>
+                                               Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC" Margin="0,0,0,8"/>
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
@@ -579,7 +579,7 @@
                                         <Button Grid.Column="1" Content="&#x6D4F;&#x89C8;" Click="BrowseOutputPath_Click"
                                                 Background="{DynamicResource Surface3Brush}" Foreground="{DynamicResource Text2Brush}"
                                                 BorderBrush="{DynamicResource Border2Brush}" BorderThickness="1.5" Padding="12,0" Height="30"
-                                                FontSize="12" FontFamily="Segoe UI" Margin="8,0,0,0" Cursor="Hand"
+                                                FontSize="12" FontFamily="Noto Sans SC" Margin="8,0,0,0" Cursor="Hand"
                                                 Style="{StaticResource RoundedButtonStyle}"/>
                                     </Grid>
                                 </StackPanel>
@@ -588,9 +588,9 @@
                             <Border Padding="16,14">
                                 <StackPanel>
                                     <TextBlock Text="&#x751F;&#x6210;&#x540E;&#x5B89;&#x88C5;" FontSize="11" FontWeight="SemiBold"
-                                               Foreground="{DynamicResource Text3Brush}" FontFamily="Segoe UI"/>
+                                               Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC"/>
                                     <TextBlock Text="&#x81EA;&#x52A8;&#x8BBE;&#x4E3A;&#x5F53;&#x524D;&#x5C4F;&#x4FDD;" FontSize="10.5"
-                                               Foreground="{DynamicResource Text3Brush}" FontFamily="Segoe UI" Margin="0,1,0,8"/>
+                                               Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC" Margin="0,1,0,8"/>
                                     <StackPanel Orientation="Horizontal">
                                         <RadioButton x:Name="InstallNo" Content="&#x5426;" IsChecked="True" GroupName="AutoInstall"
                                                      Style="{StaticResource ToggleRadioStyle}" Margin="0,0,12,0"/>

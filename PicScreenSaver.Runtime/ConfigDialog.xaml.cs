@@ -173,7 +173,7 @@ namespace PicScreenSaver.Runtime
                     Cursor = System.Windows.Input.Cursors.Hand,
                     Foreground = new SolidColorBrush(ColorFromHex("#1A1D2A")),
                     FontSize = 11,
-                    FontFamily = new FontFamily("Segoe UI"),
+                    FontFamily = new FontFamily("Noto Sans SC"),
                     Height = 22
                 };
                 cb.Checked += EffectCheckBox_Changed;

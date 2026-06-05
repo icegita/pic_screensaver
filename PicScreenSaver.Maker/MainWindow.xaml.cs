@@ -760,7 +760,7 @@ namespace PicScreenSaver.Maker
                 removeBtn.MouseLeftButtonDown += (s, ev) => { _images.Remove(item); RefreshImageGrid(); UpdateEstimate(); };
                 grid.Children.Add(removeBtn);
 
-                grid.Children.Add(new TextBlock { Text = item.FileName, FontSize = 11.5, FontWeight = FontWeights.Medium, Foreground = ThemeColors.Brush(ThemeColors.CardInfoMain), FontFamily = new FontFamily("Segoe UI"), TextTrimming = TextTrimming.CharacterEllipsis, Margin = new Thickness(10, 0, 10, 1), VerticalAlignment = VerticalAlignment.Bottom });
+                grid.Children.Add(new TextBlock { Text = item.FileName, FontSize = 11.5, FontWeight = FontWeights.Medium, Foreground = ThemeColors.Brush(ThemeColors.CardInfoMain), FontFamily = new FontFamily("Noto Sans SC"), TextTrimming = TextTrimming.CharacterEllipsis, Margin = new Thickness(10, 0, 10, 1), VerticalAlignment = VerticalAlignment.Bottom });
 
 
 
@@ -962,7 +962,7 @@ namespace PicScreenSaver.Maker
             });
 
             // 幽灵底部文件名
-            ghostGrid.Children.Add(new TextBlock { Text = item.FileName, FontSize = 11.5, FontWeight = FontWeights.Medium, Foreground = ThemeColors.Brush(ThemeColors.CardInfoMain), FontFamily = new FontFamily("Segoe UI"), TextTrimming = TextTrimming.CharacterEllipsis, Margin = new Thickness(10, 0, 10, 0), VerticalAlignment = VerticalAlignment.Bottom });
+            ghostGrid.Children.Add(new TextBlock { Text = item.FileName, FontSize = 11.5, FontWeight = FontWeights.Medium, Foreground = ThemeColors.Brush(ThemeColors.CardInfoMain), FontFamily = new FontFamily("Noto Sans SC"), TextTrimming = TextTrimming.CharacterEllipsis, Margin = new Thickness(10, 0, 10, 0), VerticalAlignment = VerticalAlignment.Bottom });
 
             ghost.Child = ghostGrid;
 
@@ -1107,6 +1107,65 @@ namespace PicScreenSaver.Maker
         private void DisplayDurationPlus_Click(object s, RoutedEventArgs e) { _displayDuration = Math.Min(60.0, _displayDuration + 0.5); DisplayDurationValue.Text = _displayDuration.ToString("F1"); }
         private void TransitionDurationMinus_Click(object s, RoutedEventArgs e) { _transitionDuration = Math.Max(0.3, _transitionDuration - 0.1); TransitionDurationValue.Text = _transitionDuration.ToString("F1"); }
         private void TransitionDurationPlus_Click(object s, RoutedEventArgs e) { _transitionDuration = Math.Min(5.0, _transitionDuration + 0.1); TransitionDurationValue.Text = _transitionDuration.ToString("F1"); }
+
+        private System.Windows.Threading.DispatcherTimer _repeatTimer;
+        private Action _repeatAction;
+        private DateTime _repeatStartTime;
+        private bool _repeatFastMode;
+
+        private void Btn_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (sender is Button btn)
+            {
+                string name = btn.Name;
+                _repeatFastMode = false;
+                Action act = null;
+                if (name == "DisplayDurationMinusBtn") act = () =>
+                {
+                    if (_repeatFastMode) { _displayDuration = Math.Max(1.0, _displayDuration - 1.0); DisplayDurationValue.Text = _displayDuration.ToString("F1"); }
+                    else DisplayDurationMinus_Click(btn, null);
+                };
+                else if (name == "DisplayDurationPlusBtn") act = () =>
+                {
+                    if (_repeatFastMode) { _displayDuration = Math.Min(60.0, _displayDuration + 1.0); DisplayDurationValue.Text = _displayDuration.ToString("F1"); }
+                    else DisplayDurationPlus_Click(btn, null);
+                };
+                else if (name == "TransitionDurationMinusBtn") act = () =>
+                {
+                    if (_repeatFastMode) { _transitionDuration = Math.Max(0.3, _transitionDuration - 0.5); TransitionDurationValue.Text = _transitionDuration.ToString("F1"); }
+                    else TransitionDurationMinus_Click(btn, null);
+                };
+                else if (name == "TransitionDurationPlusBtn") act = () =>
+                {
+                    if (_repeatFastMode) { _transitionDuration = Math.Min(5.0, _transitionDuration + 0.5); TransitionDurationValue.Text = _transitionDuration.ToString("F1"); }
+                    else TransitionDurationPlus_Click(btn, null);
+                };
+                _repeatAction = act;
+                if (_repeatAction != null)
+                {
+                    _repeatStartTime = DateTime.UtcNow;
+                    _repeatTimer?.Stop();
+                    _repeatTimer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(150) };
+                    _repeatTimer.Tick += (s, args) =>
+                    {
+                        if (!btn.IsMouseCaptured) { _repeatTimer.Stop(); return; }
+
+                        double elapsed = (DateTime.UtcNow - _repeatStartTime).TotalSeconds;
+                        if (elapsed >= 1.5 && !_repeatFastMode)
+                        {
+                            _repeatFastMode = true;
+                            _repeatTimer.Interval = TimeSpan.FromMilliseconds(50);
+                        }
+                        _repeatAction();
+                    };
+                    _repeatTimer.Start();
+                }
+            }
+        }
+
+        private void Btn_MouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e) { _repeatTimer?.Stop(); _repeatFastMode = false; }
+        private void Btn_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e) { _repeatTimer?.Stop(); _repeatFastMode = false; }
+
         private void QualitySlider_ValueChanged(object s, RoutedPropertyChangedEventArgs<double> e) { _quality = (int)e.NewValue; if (QualityValue != null) QualityValue.Text = $"{_quality}%"; if (StatusQuality != null) StatusQuality.Text = $"压缩质量 {_quality}%"; UpdateEstimate(); }
 
         private void BrowseOutputPath_Click(object sender, RoutedEventArgs e)
