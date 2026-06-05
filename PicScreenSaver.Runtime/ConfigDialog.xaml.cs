@@ -33,12 +33,15 @@ namespace PicScreenSaver.Runtime
             InitializeComponent();
             _config = config;
 
-            string scrName = Path.GetFileName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            string scrName = System.IO.Path.GetFileName(System.Reflection.Assembly.GetExecutingAssembly().Location);
             string systemDir = System.Environment.GetFolderPath(System.Environment.SpecialFolder.System);
-            string destPath = Path.Combine(systemDir, scrName);
-            bool alreadyInstalled = File.Exists(destPath);
-
+            bool alreadyInstalled = System.IO.File.Exists(System.IO.Path.Combine(systemDir, scrName));
             InstallBtn.Visibility = alreadyInstalled ? Visibility.Collapsed : Visibility.Visible;
+
+            Closing += (s, e) =>
+            {
+                try { System.Environment.Exit(0); } catch { }
+            };
 
             if (config == null) return;
 
@@ -140,7 +143,7 @@ namespace PicScreenSaver.Runtime
                 MessageBox.Show(
                     $"屏保已安装到：\n{destPath}\n\n请在桌面右键 → 个性化 → 锁屏界面 → 屏幕保护程序 中选择。",
                     "PicScreenSaver", MessageBoxButton.OK, MessageBoxImage.Information);
-                InstallBtn.Visibility = Visibility.Collapsed;
+                Close();
             }
             catch (System.UnauthorizedAccessException)
             {
@@ -163,7 +166,7 @@ namespace PicScreenSaver.Runtime
                         MessageBox.Show(
                             $"屏保已安装到：\n{destPath}\n\n请在桌面右键 → 个性化 → 锁屏界面 → 屏幕保护程序 中选择。",
                             "PicScreenSaver", MessageBoxButton.OK, MessageBoxImage.Information);
-                        InstallBtn.Visibility = Visibility.Collapsed;
+                        Close();
                     }
                     else
                     {

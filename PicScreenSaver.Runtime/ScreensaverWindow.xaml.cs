@@ -71,12 +71,27 @@ namespace PicScreenSaver.Runtime
             Height = parentRect.Bottom - parentRect.Top;
             Left = 0;
             Top = 0;
+
+            // 预览模式：每秒检测父窗口是否还存在
+            var parentTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+            parentTimer.Tick += (s, args) =>
+            {
+                if (!IsWindow(parentHandle) || !IsWindowVisible(parentHandle))
+                {
+                    DebugLog.Write("预览父窗口消失 → 退出");
+                    parentTimer.Stop();
+                    ExitScreensaver();
+                }
+            };
+            parentTimer.Start();
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            DebugLog.Write($"ScreensaverWindow.Loaded preview={_isPreview} images={_config.ImageCount}");
             if (_config.ImageCount == 0)
             {
+                DebugLog.Write("ImageCount=0, 直接关闭");
                 Close();
                 return;
             }
@@ -146,6 +161,8 @@ namespace PicScreenSaver.Runtime
             if (_isExiting) return;
             _isExiting = true;
 
+            DebugLog.Write("ExitScreensaver 被调用");
+
             _exitMonitor?.Stop();
             _engine?.Stop();
 
@@ -153,11 +170,22 @@ namespace PicScreenSaver.Runtime
             IncomingImage.Source = null;
 
             Topmost = false;
+            DebugLog.Write("ExitScreensaver → Close()");
             Close();
+            DebugLog.Write("ExitScreensaver → Shutdown(0)");
+            Application.Current?.Shutdown(0);
         }
 
         [DllImport("user32.dll")]
         private static extern IntPtr SetParent(IntPtr hWndChild, IntPtr hWndNewParent);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool IsWindow(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool IsWindowVisible(IntPtr hWnd);
 
         [DllImport("user32.dll")]
         private static extern bool GetClientRect(IntPtr hWnd, out RECT lpRect);

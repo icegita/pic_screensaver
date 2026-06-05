@@ -923,7 +923,7 @@ namespace PicScreenSaver.Maker
             string system32 = Environment.GetFolderPath(Environment.SpecialFolder.System);
             string destPath = Path.Combine(system32, Path.GetFileName(scrPath));
             File.Copy(scrPath, destPath, true);
-            SystemParametersInfo(SPI_SETSCREENSAVER, 0, destPath, SPIF_SENDWININICHANGE);
+            // 不再调用 SystemParametersInfo——它会触发屏保设置面板打开并创建预览进程
         }
 
         private void OpenProject_Click(object sender, RoutedEventArgs e)

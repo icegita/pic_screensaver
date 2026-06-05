@@ -8,6 +8,7 @@ namespace PicScreenSaver.Runtime
         [STAThread]
         public static void Main(string[] args)
         {
+            DebugLog.Write($"Main 入口 args=[{string.Join(", ", args)}]");
             var config = ResourceLoader.LoadConfig() ?? new ScreensaverConfig
             {
                 Version = "1.4",
@@ -26,7 +27,9 @@ namespace PicScreenSaver.Runtime
             // 无参数：直接弹出设置窗口（Windows 对桌面 .scr 右键不传参）
             if (command == "")
             {
+                DebugLog.Write("路由 → ShowConfigDialog (无参数)");
                 ShowConfigDialog(config);
+                DebugLog.Write("Main 结束");
                 return;
             }
 
@@ -50,16 +53,20 @@ namespace PicScreenSaver.Runtime
             }
             else if (command == "c")
             {
+                DebugLog.Write("路由 → ShowConfigDialog (/c)");
                 ShowConfigDialog(config);
             }
             else if (command == "t")
             {
+                DebugLog.Write("路由 → RunScreensaver (/t)");
                 RunScreensaver(false, config);
             }
             else
             {
+                DebugLog.Write($"路由 → RunScreensaver (默认, command={command})");
                 RunScreensaver(false, config);
             }
+            DebugLog.Write("Main 结束");
         }
 
         private static bool IntPtrTryParse(string s, out IntPtr result)
@@ -79,10 +86,15 @@ namespace PicScreenSaver.Runtime
 
         private static void RunScreensaver(bool preview, ScreensaverConfig config)
         {
+            DebugLog.Write("RunScreensaver 开始");
             var app = new Application();
             app.ShutdownMode = ShutdownMode.OnLastWindowClose;
+            app.Exit += (s, e) => DebugLog.Write($"Application.Exit code={e.ApplicationExitCode}");
             var window = new ScreensaverWindow(config, preview);
+            window.Closed += (s, e) => { DebugLog.Write("ScreensaverWindow.Closed"); app.Shutdown(); };
             app.Run(window);
+            DebugLog.Write("app.Run 返回 → Environment.Exit");
+            Environment.Exit(0);
         }
 
         private static void RunPreview(IntPtr parentHandle, ScreensaverConfig config)
@@ -90,16 +102,20 @@ namespace PicScreenSaver.Runtime
             var app = new Application();
             app.ShutdownMode = ShutdownMode.OnLastWindowClose;
             var window = new ScreensaverWindow(config, true, parentHandle);
+            window.Closed += (s, e) => app.Shutdown();
             app.Run(window);
+            Environment.Exit(0);
         }
 
         private static void ShowConfigDialog(ScreensaverConfig config)
         {
+            DebugLog.Write("ShowConfigDialog 开始");
             var app = new Application();
             app.ShutdownMode = ShutdownMode.OnLastWindowClose;
             var dialog = new ConfigDialog(config);
-            dialog.Closed += (s, e) => app.Shutdown();
+            dialog.Closed += (s, e) => { DebugLog.Write("ConfigDialog.Closed"); app.Shutdown(); };
             app.Run(dialog);
+            DebugLog.Write("app.Run 返回 → Environment.Exit");
             Environment.Exit(0);
         }
     }
