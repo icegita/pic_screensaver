@@ -12,16 +12,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '8.0.x'
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
 
-      - name: Restore dependencies
-        run: dotnet restore PicScreenSaver.sln
+      - name: Restore
+        run: msbuild PicScreenSaver.sln -t:Restore
 
       - name: Build
-        run: dotnet build PicScreenSaver.sln -c Release --no-restore
+        run: msbuild PicScreenSaver.sln -p:Configuration=Release
 
       - name: Get version
         id: version
