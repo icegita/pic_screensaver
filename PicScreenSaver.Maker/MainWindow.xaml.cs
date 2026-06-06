@@ -22,7 +22,7 @@ namespace PicScreenSaver.Maker
         private readonly ImageProcessor _imageProcessor = new ImageProcessor();
         private readonly PackageBuilder _packageBuilder = new PackageBuilder();
         private int _selectedIndex = -1;
-        private double _displayDuration = 5.0;
+        private double _displayDuration = 10.0;
         private double _transitionDuration = 1.2;
         private int _quality = 75;
         private string _outputPath = "";
@@ -181,12 +181,40 @@ namespace PicScreenSaver.Maker
 
         private void InitializePreviewImages()
         {
-            string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-            string img1 = Path.Combine(baseDir, "img", "pic1.jpg");
-            string img2 = Path.Combine(baseDir, "img", "pic2.jpg");
+            EffectPreviewImageA.Source = LoadImageFromBytes(PackageBuilder.LoadEmbeddedImage("pic1.jpg"), "#2E6B9E");
+            EffectPreviewImageB.Source = LoadImageFromBytes(PackageBuilder.LoadEmbeddedImage("pic2.jpg"), "#9E4A2E");
+        }
 
-            EffectPreviewImageA.Source = LoadImageOrDefault(img1, "#2E6B9E", "#1E3A5F");
-            EffectPreviewImageB.Source = LoadImageOrDefault(img2, "#9E4A2E", "#5F1E3A");
+        private BitmapSource LoadImageFromBytes(byte[] bytes, string fallbackColor)
+        {
+            if (bytes != null)
+            {
+                try
+                {
+                    var img = new BitmapImage();
+                    using (var ms = new MemoryStream(bytes))
+                    {
+                        img.BeginInit();
+                        img.CacheOption = BitmapCacheOption.OnLoad;
+                        img.StreamSource = ms;
+                        img.EndInit();
+                        img.Freeze();
+                    }
+                    return img;
+                }
+                catch { }
+            }
+
+            var color = (Color)ColorConverter.ConvertFromString(fallbackColor);
+            var group = new DrawingGroup();
+            group.Children.Add(new GeometryDrawing(
+                new SolidColorBrush(color), null,
+                new RectangleGeometry(new Rect(0, 0, 420, 263))));
+            var visual = new DrawingVisual();
+            using (var context = visual.RenderOpen()) { context.DrawDrawing(group); }
+            var target = new RenderTargetBitmap(420, 263, 96, 96, PixelFormats.Pbgra32);
+            target.Render(visual);
+            return target;
         }
 
         private BitmapSource LoadImageOrDefault(string filePath, string fallbackColor1, string fallbackColor2)
@@ -1198,10 +1226,15 @@ namespace PicScreenSaver.Maker
             if (string.IsNullOrWhiteSpace(SaverNameInput.Text)) { ShowToast("请输入屏保名称"); return; }
             if (string.IsNullOrWhiteSpace(_outputPath) || !Directory.Exists(_outputPath)) { ShowToast("请选择有效的输出路径"); return; }
 
-            var runtimePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "PicScreenSaver.Runtime.exe");
-            if (!File.Exists(runtimePath)) { ShowToast("找不到运行时模板文件 PicScreenSaver.Runtime.exe"); return; }
-
-            var runtimeTemplate = File.ReadAllBytes(runtimePath);
+            byte[] runtimeTemplate;
+            try
+            {
+                runtimeTemplate = PackageBuilder.LoadEmbeddedRuntime();
+            }
+            catch
+            {
+                ShowToast("找不到运行时模板文件"); return;
+            }
             var config = new ScreensaverConfig
             {
                 Version = "1.4",

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using Newtonsoft.Json;
@@ -22,6 +23,37 @@ namespace PicScreenSaver.Maker.Services
 
         private const string CONFIG_RESOURCE = "SSCONFIG";
         private const string IMAGE_RESOURCE = "SSIMAGE";
+
+        /// <summary>
+        /// 从嵌入资源加载 Runtime.exe 模板（单文件分发用）
+        /// </summary>
+        public static byte[] LoadEmbeddedRuntime()
+        {
+            var asm = Assembly.GetExecutingAssembly();
+            using (var stream = asm.GetManifestResourceStream("PicScreenSaver.Maker.Resources.PicScreenSaver.Runtime.exe"))
+            {
+                if (stream == null)
+                    throw new InvalidOperationException("嵌入的 Runtime.exe 未找到");
+                var bytes = new byte[stream.Length];
+                stream.Read(bytes, 0, bytes.Length);
+                return bytes;
+            }
+        }
+
+        /// <summary>
+        /// 从嵌入资源加载预览图片
+        /// </summary>
+        public static byte[] LoadEmbeddedImage(string name)
+        {
+            var asm = Assembly.GetExecutingAssembly();
+            using (var stream = asm.GetManifestResourceStream("PicScreenSaver.Maker.Resources." + name))
+            {
+                if (stream == null) return null;
+                var bytes = new byte[stream.Length];
+                stream.Read(bytes, 0, bytes.Length);
+                return bytes;
+            }
+        }
 
         public string BuildPackage(
             byte[] runtimeTemplate,

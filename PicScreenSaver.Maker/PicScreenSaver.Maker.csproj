@@ -5,21 +5,35 @@
     <UseWPF>true</UseWPF>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <RootNamespace>PicScreenSaver.Maker</RootNamespace>
-    <AssemblyName>PicScreenSaver.Maker</AssemblyName>
+    <AssemblyName>PicScreenSaver v1.0</AssemblyName>
+    <Version>1.0.0.0</Version>
+    <FileVersion>1.0.0.0</FileVersion>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    <ProductVersion>1.0.0</ProductVersion>
+    <Company>iCeGiTa</Company>
+    <Copyright>Copyright © 2026 iCeGiTa. All rights reserved.</Copyright>
+    <Product>PicScreenSaver v1.0.0</Product>
+    <AssemblyTitle>PicScreenSaver 1.0.0 - 漂亮的轻量化屏保制作工具</AssemblyTitle>
+    <Description>PicScreenSaver 1.0.0 - 漂亮的轻量化屏保制作工具</Description>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
     <FileAlignment>512</FileAlignment>
     <RestorePackagesWithLockFile>false</RestorePackagesWithLockFile>
+    <ApplicationIcon>..\img\icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
+  <!-- 嵌入所有运行时依赖到 exe 内部，实现单文件分发 -->
   <ItemGroup>
-    <Content Include="..\img\icon.png" CopyToOutputDirectory="PreserveNewest" Link="img\icon.png" />
-    <Content Include="..\img\pic1.jpg" CopyToOutputDirectory="PreserveNewest" Link="img\pic1.jpg" />
-    <Content Include="..\img\pic2.jpg" CopyToOutputDirectory="PreserveNewest" Link="img\pic2.jpg" />
+    <EmbeddedResource Include="..\PicScreenSaver.Runtime\bin\$(Configuration)\net48\PicScreenSaver.Runtime.exe" Link="Resources\PicScreenSaver.Runtime.exe" />
+    <EmbeddedResource Include="..\img\pic1.jpg" Link="Resources\pic1.jpg" />
+    <EmbeddedResource Include="..\img\pic2.jpg" Link="Resources\pic2.jpg" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Costura.Fody" Version="6.2.0">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="PeNet" Version="3.0.0" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.77" />
@@ -29,8 +43,4 @@
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
   </ItemGroup>
-  <Target Name="CopyRuntime" AfterTargets="Build">
-    <Copy SourceFiles="$(MSBuildThisFileDirectory)..\PicScreenSaver.Runtime\bin\$(Configuration)\net48\PicScreenSaver.Runtime.exe"
-          DestinationFolder="$(OutputPath)" />
-  </Target>
 </Project>

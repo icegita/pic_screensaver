@@ -11,7 +11,7 @@ namespace PicScreenSaver.Runtime
             var config = ResourceLoader.LoadConfig() ?? new ScreensaverConfig
             {
                 Version = "1.4",
-                DisplayDuration = 5.0,
+                DisplayDuration = 10.0,
                 TransitionDuration = 1.2,
                 ShuffleImages = true,
                 SelectedEffects = new[] { "Fade", "SlideLeft", "CrossFade" },
@@ -57,7 +57,6 @@ namespace PicScreenSaver.Runtime
             }
             else if (command == "c" || command == "i")
             {
-                System.Windows.MessageBox.Show("args: " + string.Join(",", args) + "\nraw: " + raw + "\ncmd: " + command);
                 ShowConfigDialog(config);
             }
             else if (command == "t")

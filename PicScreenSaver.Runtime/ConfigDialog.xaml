@@ -71,13 +71,13 @@
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                                     <Border Background="#E8E9EF" CornerRadius="4" BorderThickness="0" Padding="6,2" Margin="0,0,6,0">
-                                        <TextBlock x:Name="DisplayDurationLabel" Text="5.0" FontSize="12" FontWeight="SemiBold"
+                                        <TextBlock x:Name="DisplayDurationLabel" Text="10.0" FontSize="12" FontWeight="SemiBold"
                                                    Foreground="#5570E8" FontFamily="Consolas"/>
                                     </Border>
                                     <TextBlock Text="&#x79D2;" FontSize="10.5" Foreground="#555A70" VerticalAlignment="Center" FontFamily="Noto Sans SC"/>
                                 </StackPanel>
                             </Grid>
-                            <Slider x:Name="DisplayDurationSlider" Minimum="1" Maximum="60" Value="5"
+                            <Slider x:Name="DisplayDurationSlider" Minimum="1" Maximum="60" Value="10"
                                     SmallChange="0.5" LargeChange="1" TickFrequency="0.5" IsSnapToTickEnabled="True"
                                     ValueChanged="DisplayDuration_ValueChanged"
                                     Foreground="#5570E8" Margin="0,6,0,0"/>

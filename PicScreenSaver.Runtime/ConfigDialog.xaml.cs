@@ -108,13 +108,23 @@ namespace PicScreenSaver.Runtime
             InitializeComponent();
             _config = config;
 
-            // 设置窗口图标
+            // 设置窗口图标（从嵌入资源加载）
             try
             {
-                string exeDir = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-                string iconPath = System.IO.Path.Combine(exeDir, "img", "sys.png");
-                if (System.IO.File.Exists(iconPath))
-                    Icon = new System.Windows.Media.Imaging.BitmapImage(new Uri(iconPath));
+                using (var stream = System.Reflection.Assembly.GetExecutingAssembly()
+                    .GetManifestResourceStream("PicScreenSaver.Runtime.Resources.sys.png"))
+                {
+                    if (stream != null)
+                    {
+                        var img = new BitmapImage();
+                        img.BeginInit();
+                        img.CacheOption = BitmapCacheOption.OnLoad;
+                        img.StreamSource = stream;
+                        img.EndInit();
+                        img.Freeze();
+                        Icon = img;
+                    }
+                }
             }
             catch { }
 
