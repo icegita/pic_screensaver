@@ -1,0 +1,704 @@
+<Window x:Class="PicScreenSaver.Maker.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="PicScreenSaver" Width="975" Height="650" MinWidth="975" MinHeight="650"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource BgBrush}"
+        WindowStyle="None"
+        ResizeMode="CanResizeWithGrip"
+        AllowsTransparency="True"
+        Closing="Window_Closing"
+        MouseLeftButtonDown="TitleBar_MouseLeftButtonDown"
+>
+    <Window.Resources>
+        <Style x:Key="TabRadioStyle" TargetType="RadioButton">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource Text2Brush}"/>
+            <Setter Property="BorderThickness" Value="0,0,0,4"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Padding" Value="16,0"/>
+            <Setter Property="Height" Value="42"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="FontFamily" Value="Noto Sans SC"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="GroupName" Value="Tabs"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="border" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}"
+                                VerticalAlignment="Stretch">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="EffectCheckBoxStyle" TargetType="CheckBox">
+            <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontFamily" Value="Noto Sans SC"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Margin" Value="0,0,0,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <Grid Background="Transparent">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border x:Name="checkBorder" Grid.Column="0" Width="16" Height="16" CornerRadius="4"
+                                    BorderBrush="{DynamicResource Border2Brush}" BorderThickness="1.5" Margin="16,0,10,0"
+                                    VerticalAlignment="Center" Background="Transparent">
+                                <TextBlock x:Name="checkMark" Text="&#x2713;" FontSize="9" Foreground="{DynamicResource WhiteBrush}"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                                           Visibility="Collapsed"/>
+                            </Border>
+                            <ContentPresenter Grid.Column="1" VerticalAlignment="Center" Margin="0,3,16,3"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="checkBorder" Property="Background" Value="{DynamicResource AccentBrush}"/>
+                                <Setter TargetName="checkBorder" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                                <Setter TargetName="checkMark" Property="Visibility" Value="Visible"/>
+                                <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="checkBorder" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="ToggleRadioStyle" TargetType="RadioButton">
+            <Setter Property="Foreground" Value="{DynamicResource Text2Brush}"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontFamily" Value="Noto Sans SC"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Grid Background="Transparent">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border x:Name="checkBorder" Grid.Column="0" Width="16" Height="16" CornerRadius="8"
+                                    BorderBrush="{DynamicResource Border2Brush}" BorderThickness="1.5" Margin="0,0,10,0"
+                                    VerticalAlignment="Center" Background="Transparent">
+                                <Border x:Name="checkDot" Width="8" Height="8" CornerRadius="4"
+                                        Background="{DynamicResource AccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                        Visibility="Collapsed"/>
+                            </Border>
+                            <ContentPresenter Grid.Column="1" VerticalAlignment="Center"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="checkBorder" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                                <Setter TargetName="checkDot" Property="Visibility" Value="Visible"/>
+                                <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="checkBorder" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="RoundedButtonStyle" TargetType="Button">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" CornerRadius="6"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                              Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Opacity" Value="0.85"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="RoundedButtonSmall" TargetType="Button">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" CornerRadius="4"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                              Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Opacity" Value="0.85"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="RoundedTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="border" CornerRadius="6"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="CardScrollBarThumb" TargetType="Thumb">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Thumb">
+                        <Border x:Name="thumbBorder" CornerRadius="3" Width="5" MinHeight="20"
+                                Background="{DynamicResource Text3Brush}" Opacity="0.3"/>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="thumbBorder" Property="Opacity" Value="0.6"/>
+                                <Setter TargetName="thumbBorder" Property="Background" Value="{DynamicResource AccentBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="CardScrollBar" TargetType="ScrollBar">
+            <Setter Property="Width" Value="10"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ScrollBar">
+                        <Grid Margin="0,5">
+                            <Border CornerRadius="5" Background="Transparent" Margin="2,0"/>
+                            <Track x:Name="PART_Track" IsDirectionReversed="True">
+                                <Track.Thumb>
+                                    <Thumb Style="{StaticResource CardScrollBarThumb}"/>
+                                </Track.Thumb>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="CardScrollViewer" TargetType="ScrollViewer">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ScrollViewer">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <ScrollContentPresenter Grid.Column="0"/>
+                            <ScrollBar x:Name="PART_VerticalScrollBar" Grid.Column="1"
+                                       Style="{StaticResource CardScrollBar}"
+                                       Value="{TemplateBinding VerticalOffset}"
+                                       Maximum="{TemplateBinding ScrollableHeight}"
+                                       ViewportSize="{TemplateBinding ViewportHeight}"
+                                       Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}"/>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="44"/>
+            <RowDefinition Height="42"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="28"/>
+        </Grid.RowDefinitions>
+        <Canvas x:Name="DragOverlay" Panel.ZIndex="9999" IsHitTestVisible="False" Visibility="Collapsed"/>
+
+        <!-- Toast overlay -->
+        <Border x:Name="ToastOverlay" Grid.Row="2" Panel.ZIndex="10000"
+                HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,12,0,0"
+                Background="{DynamicResource AccentBrush}" CornerRadius="6"
+                Padding="16,8" Opacity="0" IsHitTestVisible="False"
+                Effect="{DynamicResource ToastShadow}">
+            <TextBlock x:Name="ToastText" Text="" FontSize="12" FontWeight="Medium"
+                       Foreground="White" FontFamily="Noto Sans SC"/>
+        </Border>
+
+        <Border x:Name="TitleBarBg" Grid.Row="0" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1">
+            <Grid>
+                <TextBlock x:Name="TitleText" Text="PicScreenSaver" HorizontalAlignment="Center" VerticalAlignment="Center"
+                           FontSize="12.5" FontWeight="Medium" Foreground="{DynamicResource Text2Brush}" FontFamily="Noto Sans SC"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <Button x:Name="ThemeToggleBtn" Width="36" Height="44"
+                            Background="Transparent" Foreground="{DynamicResource Text2Brush}" BorderThickness="0"
+                            Cursor="Hand"
+                            Click="ThemeToggleBtn_Click"
+                            MouseEnter="WindowBtn_MouseEnter" MouseLeave="WindowBtn_MouseLeave"
+                            ToolTip="&#x5207;&#x6362;&#x4E3B;&#x9898;"/>
+                    <Button x:Name="MinimizeBtn" Content="&#xE921;" Width="36" Height="44"
+                            Background="Transparent" Foreground="{DynamicResource Text2Brush}" BorderThickness="0"
+                            FontFamily="Segoe MDL2 Assets" FontSize="10" Cursor="Hand"
+                            Click="MinimizeBtn_Click"
+                            MouseEnter="WindowBtn_MouseEnter" MouseLeave="WindowBtn_MouseLeave"/>
+                    <Button x:Name="MaximizeBtn" Content="&#xE922;" Width="36" Height="44"
+                            Background="Transparent" Foreground="{DynamicResource Text2Brush}" BorderThickness="0"
+                            FontFamily="Segoe MDL2 Assets" FontSize="10" Cursor="Hand"
+                            Click="MaximizeBtn_Click"
+                            MouseEnter="WindowBtn_MouseEnter" MouseLeave="WindowBtn_MouseLeave"/>
+                    <Button x:Name="CloseBtn" Content="&#xE8BB;" Width="36" Height="44"
+                            Background="Transparent" Foreground="{DynamicResource Text2Brush}" BorderThickness="0"
+                            FontFamily="Segoe MDL2 Assets" FontSize="10" Cursor="Hand"
+                            Click="CloseBtn_Click"
+                            MouseEnter="CloseBtn_MouseEnter" MouseLeave="CloseBtn_MouseLeave"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Border x:Name="TabBarBg" Grid.Row="1" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1">
+            <Grid>
+                <StackPanel Orientation="Horizontal" Margin="20,0,0,0" VerticalAlignment="Center">
+                    <RadioButton x:Name="TabImages" Content="&#x56FE;&#x7247;" IsChecked="True"
+                                 Click="TabImages_Click" Style="{StaticResource TabRadioStyle}"/>
+                    <RadioButton x:Name="TabEffects" Content="&#x6548;&#x679C;"
+                                 Click="TabEffects_Click" Style="{StaticResource TabRadioStyle}"/>
+                    <RadioButton x:Name="TabSettings" Content="&#x8BBE;&#x7F6E;"
+                                 Click="TabSettings_Click" Style="{StaticResource TabRadioStyle}"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,20,0">
+                    <Button x:Name="OpenBtn" Content="&#x6253;&#x5F00;"
+                            Click="OpenProject_Click"
+                            Background="{DynamicResource Surface2Brush}" Foreground="{DynamicResource Text2Brush}" BorderBrush="{DynamicResource BorderBrush}"
+                            BorderThickness="1" Padding="14,0" Height="30" FontSize="12"
+                            Style="{StaticResource RoundedButtonStyle}" FontFamily="Noto Sans SC" Cursor="Hand" Margin="0,0,6,0"/>
+                    <Button x:Name="SaveBtn" Content="&#x4FDD;&#x5B58;"
+                            Click="SaveProject_Click"
+                            Background="{DynamicResource Surface2Brush}" Foreground="{DynamicResource Text2Brush}" BorderBrush="{DynamicResource BorderBrush}"
+                            BorderThickness="1" Padding="14,0" Height="30" FontSize="12"
+                            Style="{StaticResource RoundedButtonStyle}" FontFamily="Noto Sans SC" Cursor="Hand" Margin="0,0,6,0"/>
+                    <Button x:Name="GenerateBtn" Content="&#x751F;&#x6210; .scr"
+                            Click="GenerateBtn_Click"
+                            Background="{DynamicResource AccentBrush}" Foreground="{DynamicResource WhiteBrush}" BorderThickness="0"
+                            Style="{StaticResource RoundedButtonStyle}"
+                            FontSize="12.5" FontWeight="SemiBold" FontFamily="Noto Sans SC"
+                            Padding="18,0" Height="30" Cursor="Hand"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="2" Margin="24,16,24,16">
+            <Grid x:Name="ImagesPanel" Visibility="Visible">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="16"/>
+                    <ColumnDefinition Width="280"/>
+                </Grid.ColumnDefinitions>
+                <!-- 左栏：图片管理 -->
+                <Border Grid.Column="0" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10" ClipToBounds="True">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Border Grid.Row="0" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="12,8">
+                            <DockPanel>
+                                <Button Content="&#x6DFB;&#x52A0;&#x56FE;&#x7247;" Click="AddImages_Click"
+                                        DockPanel.Dock="Left"
+                                        Background="{DynamicResource Surface2Brush}" Foreground="{DynamicResource Text2Brush}" BorderBrush="{DynamicResource BorderBrush}"
+                                        BorderThickness="1" Padding="12,0" Height="30" FontSize="12" Style="{StaticResource RoundedButtonStyle}"
+                                        FontFamily="Noto Sans SC" Cursor="Hand"/>
+                                <Separator Width="1" DockPanel.Dock="Left" Background="{DynamicResource BorderBrush}" Margin="8,4"/>
+                                <Button Content="&#x524D;&#x79FB;" Click="MoveUp_Click"
+                                        DockPanel.Dock="Left"
+                                        Background="{DynamicResource Surface2Brush}" Foreground="{DynamicResource Text2Brush}" BorderBrush="{DynamicResource BorderBrush}"
+                                        BorderThickness="1" Padding="12,0" Height="30" FontSize="12" Style="{StaticResource RoundedButtonStyle}"
+                                        FontFamily="Noto Sans SC" Cursor="Hand"/>
+                                <Button Content="&#x540E;&#x79FB;" Click="MoveDown_Click"
+                                        DockPanel.Dock="Left"
+                                        Background="{DynamicResource Surface2Brush}" Foreground="{DynamicResource Text2Brush}" BorderBrush="{DynamicResource BorderBrush}"
+                                        BorderThickness="1" Padding="12,0" Height="30" FontSize="12" Style="{StaticResource RoundedButtonStyle}"
+                                        FontFamily="Noto Sans SC" Cursor="Hand"/>
+                                <Separator Width="1" DockPanel.Dock="Left" Background="{DynamicResource BorderBrush}" Margin="8,4"/>
+                                <Button Content="&#x5168;&#x90E8;&#x79FB;&#x9664;" Click="RemoveAllImages_Click"
+                                        DockPanel.Dock="Left"
+                                        Background="{DynamicResource Surface2Brush}" Foreground="{DynamicResource DangerBrush}" BorderBrush="{DynamicResource DangerBgBrush}"
+                                        BorderThickness="1" Padding="12,0" Height="30" FontSize="12" Style="{StaticResource RoundedButtonStyle}"
+                                        FontFamily="Noto Sans SC" Cursor="Hand"/>
+                                <TextBlock x:Name="ImageCountText" VerticalAlignment="Center"
+                                           Margin="12,0,0,0" FontSize="12"
+                                           Foreground="{DynamicResource Text3Brush}" FontFamily="Consolas"
+                                           HorizontalAlignment="Right"/>
+                            </DockPanel>
+                        </Border>
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="12,8" Background="Transparent" Style="{StaticResource CardScrollViewer}">
+                            <WrapPanel x:Name="ImageGrid" ItemWidth="195" ItemHeight="150"/>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+                <!-- 右栏：预览 + 信息 -->
+                <Border Grid.Column="2" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10" ClipToBounds="True">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="200"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Border Grid.Row="0" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="12,0" Height="46">
+                            <TextBlock Text="&#x9884;&#x89C8;" FontSize="11" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC" VerticalAlignment="Center"/>
+                        </Border>
+                        <Border Grid.Row="1" Background="{DynamicResource Surface2Brush}" ClipToBounds="True">
+                            <Image x:Name="PreviewImage" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"/>
+                        </Border>
+                        <Border Grid.Row="2" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="16,8">
+                            <StackPanel>
+                                <TextBlock Text="&#x6587;&#x4EF6;&#x540D;" FontSize="10.5" Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC"/>
+                                <TextBlock x:Name="PreviewFileName" FontSize="11" Foreground="{DynamicResource TextBrush}" FontFamily="Consolas" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Grid.Row="3" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="16,8">
+                            <StackPanel>
+                                <TextBlock Text="&#x539F;&#x59CB;" FontSize="10.5" Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC"/>
+                                <TextBlock x:Name="PreviewResolution" FontSize="11" Foreground="{DynamicResource TextBrush}" FontFamily="Consolas" Margin="0,2,0,0"/>
+                                <TextBlock x:Name="PreviewOriginalSize" FontSize="11" Foreground="{DynamicResource TextBrush}" FontFamily="Consolas" Margin="0,1,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Grid.Row="4" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="16,8">
+                            <StackPanel>
+                                <TextBlock Text="&#x538B;&#x7F29;&#x540E;" FontSize="10.5" Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC"/>
+                                <TextBlock x:Name="PreviewCompressedSize" FontSize="11" Foreground="{DynamicResource SuccessBrush}" FontFamily="Consolas" Margin="0,2,0,0"/>
+                                <TextBlock Text="&#x538B;&#x7F29;&#x7387;" FontSize="10.5" Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC" Margin="0,4,0,0"/>
+                                <TextBlock x:Name="PreviewCompressionRatio" FontSize="11" Foreground="{DynamicResource SuccessBrush}" FontFamily="Consolas" Margin="0,1,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Grid.Row="5" Padding="16,8">
+                            <StackPanel>
+                                <TextBlock Text="&#x64AD;&#x653E;&#x987A;&#x5E8F;" FontSize="10.5" Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC" Margin="0,0,0,8"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <RadioButton x:Name="OrderSequential" Content="&#x987A;&#x5E8F;" GroupName="PlayOrder" Margin="0,0,12,0" Style="{StaticResource ToggleRadioStyle}"/>
+                                    <RadioButton x:Name="OrderRandom" Content="&#x968F;&#x673A;" IsChecked="True" GroupName="PlayOrder" Style="{StaticResource ToggleRadioStyle}"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <Grid x:Name="EffectsPanel" Visibility="Collapsed">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="16"/>
+                    <ColumnDefinition Width="280"/>
+                </Grid.ColumnDefinitions>
+                <!-- 左栏：效果列表 -->
+                <Border Grid.Column="0" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10" ClipToBounds="True">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Border Grid.Row="0" Padding="12,0" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Height="46">
+                            <Grid VerticalAlignment="Center">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <TextBlock Text="&#x5DF2;&#x9009;: " FontSize="11" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC"/>
+                                    <TextBlock x:Name="SelectedEffectCountLabel" Text="0" FontSize="11" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource AccentBrush}" FontFamily="Noto Sans SC"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                    <Button Content="&#x5168;&#x9009;" Click="SelectAllEffects_Click"
+                                            Background="{DynamicResource Surface2Brush}" Foreground="{DynamicResource Text3Brush}" BorderBrush="{DynamicResource BorderBrush}"
+                                            BorderThickness="1" Padding="7,2" FontSize="10.5" FontFamily="Noto Sans SC" Cursor="Hand" Style="{StaticResource RoundedButtonSmall}"/>
+                                    <Button Content="&#x6E05;&#x7A7A;" Click="ClearEffects_Click"
+                                            Background="{DynamicResource Surface2Brush}" Foreground="{DynamicResource Text3Brush}" BorderBrush="{DynamicResource BorderBrush}"
+                                            BorderThickness="1" Padding="7,2" FontSize="10.5" FontFamily="Noto Sans SC" Margin="6,0,0,0" Cursor="Hand" Style="{StaticResource RoundedButtonSmall}"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Background="Transparent" Padding="8,4" Style="{StaticResource CardScrollViewer}">
+                            <UniformGrid x:Name="EffectsList" Columns="2" HorizontalAlignment="Center" MaxWidth="400"/>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+                <!-- 右栏：预览 + 描述 -->
+                <Border Grid.Column="2" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10" ClipToBounds="True">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="200"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Border Grid.Row="0" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="12,0" Height="46">
+                            <TextBlock Text="&#x6548;&#x679C;&#x9884;&#x89C8;" FontSize="11" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC" VerticalAlignment="Center"/>
+                        </Border>
+                        <Border Grid.Row="1" Background="{DynamicResource Surface2Brush}" ClipToBounds="True">
+                            <Grid>
+                                <Image x:Name="EffectPreviewImageA" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality" Opacity="1"/>
+                                <Image x:Name="EffectPreviewImageB" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality" Opacity="0"/>
+                            </Grid>
+                        </Border>
+                        <Border Grid.Row="2" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="16,10">
+                            <StackPanel>
+                                <TextBlock Text="&#x6548;&#x679C;&#x540D;&#x79F0;" FontSize="10.5" Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC"/>
+                                <TextBlock x:Name="SelectedEffectName" Text="" FontSize="11" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextBrush}" FontFamily="Consolas" Margin="0,2,0,0"/>
+                                <TextBlock x:Name="SelectedEffectDesc" Text="" FontSize="11" Foreground="{DynamicResource Text2Brush}"
+                                           FontFamily="Noto Sans SC" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Grid.Row="3" Padding="16,10">
+                            <StackPanel>
+                                <TextBlock Text="&#x5DF2;&#x9009;" FontSize="10.5" Foreground="{DynamicResource Text3Brush}"
+                                           FontFamily="Noto Sans SC" Margin="0,1,0,0" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="SelectedEffectCount" Text="0" FontSize="22" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource AccentBrush}" FontFamily="Consolas" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <Grid x:Name="SettingsPanel" Visibility="Collapsed">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="16"/>
+                    <ColumnDefinition Width="280"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- 左栏：输出 -->
+                <Border Grid.Column="0" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10" ClipToBounds="True">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Border Grid.Row="0" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="12,0" Height="46">
+                            <TextBlock Text="&#x8F93;&#x51FA;" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC" VerticalAlignment="Center"/>
+                        </Border>
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Background="Transparent" Padding="0,4" Style="{StaticResource CardScrollViewer}">
+                            <StackPanel>
+                                <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="16,14">
+                                    <StackPanel>
+                                        <TextBlock Text="&#x5C4F;&#x4FDD;&#x540D;&#x79F0;" FontSize="11" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC"/>
+                                        <TextBlock Text="&#x8F93;&#x51FA;&#x6587;&#x4EF6;&#x540D;" FontSize="10.5"
+                                                   Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC" Margin="0,1,0,8"/>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBox Grid.Column="0" x:Name="SaverNameInput" Text="MyScreenSaver" Height="30"
+                                                     Background="{DynamicResource Surface2Brush}" Foreground="{DynamicResource TextBrush}"
+                                                     BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1.5" FontFamily="Consolas"
+                                                     FontSize="11" VerticalContentAlignment="Center" Padding="8,0"
+                                                     Style="{StaticResource RoundedTextBoxStyle}"/>
+                                            <TextBlock Grid.Column="1" Text=".scr" FontSize="12" Foreground="{DynamicResource Text2Brush}"
+                                                       VerticalAlignment="Center" Margin="6,0,0,0"/>
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="16,14">
+                                    <StackPanel>
+                                        <TextBlock Text="&#x8F93;&#x51FA;&#x8DEF;&#x5F84;" FontSize="11" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC" Margin="0,0,0,8"/>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBox Grid.Column="0" x:Name="OutputPathInput" Text="" Height="30"
+                                                     Background="{DynamicResource Surface2Brush}" Foreground="{DynamicResource Text2Brush}"
+                                                     BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1.5" FontFamily="Consolas"
+                                                     FontSize="11" VerticalContentAlignment="Center" Padding="8,0" IsReadOnly="True"
+                                                     Style="{StaticResource RoundedTextBoxStyle}"/>
+                                            <Button Grid.Column="1" Content="&#x6D4F;&#x89C8;" Click="BrowseOutputPath_Click"
+                                                    Background="{DynamicResource Surface3Brush}" Foreground="{DynamicResource Text2Brush}"
+                                                    BorderBrush="{DynamicResource Border2Brush}" BorderThickness="1.5" Padding="12,0" Height="30"
+                                                    FontSize="12" FontFamily="Noto Sans SC" Margin="8,0,0,0" Cursor="Hand"
+                                                    Style="{StaticResource RoundedButtonStyle}"/>
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Padding="16,14">
+                                    <StackPanel>
+                                        <TextBlock Text="&#x751F;&#x6210;&#x540E;&#x5B89;&#x88C5;" FontSize="11" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC"/>
+                                        <TextBlock Text="&#x81EA;&#x52A8;&#x8BBE;&#x4E3A;&#x5F53;&#x524D;&#x5C4F;&#x4FDD;" FontSize="10.5"
+                                                   Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC" Margin="0,1,0,8"/>
+                                        <StackPanel Orientation="Horizontal">
+                                            <RadioButton x:Name="InstallNo" Content="&#x5426;" IsChecked="True" GroupName="AutoInstall"
+                                                         Style="{StaticResource ToggleRadioStyle}" Margin="0,0,12,0"/>
+                                            <RadioButton x:Name="InstallYes" Content="&#x662F;" GroupName="AutoInstall"
+                                                         Style="{StaticResource ToggleRadioStyle}"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+
+                <!-- 右栏：播放 + 压缩 + 体积 -->
+                <Border Grid.Column="2" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10" ClipToBounds="True">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Border Grid.Row="0" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="12,0" Height="46">
+                            <TextBlock Text="&#x64AD;&#x653E;" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC" VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel Grid.Row="1">
+                            <!-- 播放时长 -->
+                            <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="16,14">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="&#x64AD;&#x653E;&#x65F6;&#x957F;" FontSize="11" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC"/>
+                                        <TextBlock Text="&#x6BCF;&#x5F20;&#x56FE;&#x7247;&#x9759;&#x6B62;&#x5C55;&#x793A;&#x7684;&#x65F6;&#x95F4;" FontSize="10.5"
+                                                   Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC" Margin="0,1,0,0"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Button x:Name="DisplayDurationMinusBtn" Width="26" Height="28" Click="DisplayDurationMinus_Click" Cursor="Hand" PreviewMouseDown="Btn_MouseDown" PreviewMouseUp="Btn_MouseUp" MouseLeave="Btn_MouseLeave"/>
+                                        <Border Background="{DynamicResource Surface2Brush}" CornerRadius="4" BorderThickness="0" Width="46" Height="28" Margin="4,0">
+                                            <TextBlock x:Name="DisplayDurationValue" Text="10.0" TextAlignment="Center"
+                                                       VerticalAlignment="Center" Foreground="{DynamicResource TextBrush}" FontFamily="Consolas" FontSize="13"/>
+                                        </Border>
+                                        <TextBlock Text="&#x79D2;" FontSize="11" Foreground="{DynamicResource Text2Brush}" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                        <Button x:Name="DisplayDurationPlusBtn" Width="26" Height="28" Cursor="Hand" Click="DisplayDurationPlus_Click" PreviewMouseDown="Btn_MouseDown" PreviewMouseUp="Btn_MouseUp" MouseLeave="Btn_MouseLeave"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <!-- 过渡动画时长 -->
+                            <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="16,14">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="&#x8FC7;&#x6E21;&#x52A8;&#x753B;&#x65F6;&#x957F;" FontSize="11" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC"/>
+                                        <TextBlock Text="&#x5207;&#x6362;&#x52A8;&#x753B;&#x64AD;&#x653E;&#x7684;&#x65F6;&#x95F4;" FontSize="10.5"
+                                                   Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC" Margin="0,1,0,0"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Button x:Name="TransitionDurationMinusBtn" Width="26" Height="28" Click="TransitionDurationMinus_Click" Cursor="Hand" PreviewMouseDown="Btn_MouseDown" PreviewMouseUp="Btn_MouseUp" MouseLeave="Btn_MouseLeave"/>
+                                        <Border Background="{DynamicResource Surface2Brush}" CornerRadius="4" BorderThickness="0" Width="46" Height="28" Margin="4,0">
+                                            <TextBlock x:Name="TransitionDurationValue" Text="1.2" TextAlignment="Center"
+                                                       VerticalAlignment="Center" Foreground="{DynamicResource TextBrush}" FontFamily="Consolas" FontSize="13"/>
+                                        </Border>
+                                        <TextBlock Text="&#x79D2;" FontSize="11" Foreground="{DynamicResource Text2Brush}" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                        <Button x:Name="TransitionDurationPlusBtn" Width="26" Height="28" Cursor="Hand" Margin="0,0,0,0" Click="TransitionDurationPlus_Click" PreviewMouseDown="Btn_MouseDown" PreviewMouseUp="Btn_MouseUp" MouseLeave="Btn_MouseLeave"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <!-- 压缩质量 -->
+                            <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="16,14">
+                                <StackPanel>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="&#x538B;&#x7F29;&#x8D28;&#x91CF;" FontSize="11" FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC"/>
+                                            <TextBlock Text="&#x6570;&#x503C;&#x8D8A;&#x4F4E;&#x4F53;&#x79EF;&#x8D8A;&#x5C0F;" FontSize="10.5"
+                                                       Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC" Margin="0,1,0,0"/>
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="1" x:Name="QualityValue" Text="75%" FontSize="14" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource AccentBrush}" FontFamily="Consolas" VerticalAlignment="Center"/>
+                                    </Grid>
+                                    <Slider x:Name="QualitySlider" Minimum="40" Maximum="90" Value="75" SmallChange="5" LargeChange="10"
+                                            Margin="0,8,0,4" IsSnapToTickEnabled="True" TickFrequency="5"
+                                            ValueChanged="QualitySlider_ValueChanged"/>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="40% &#x6781;&#x5C0F;" FontSize="10" Foreground="{DynamicResource Text3Brush}" FontFamily="Consolas"/>
+                                        <TextBlock Grid.Column="1" Text="&#x63A8;&#x8350;" FontSize="10" Foreground="{DynamicResource Text3Brush}" FontFamily="Consolas"/>
+                                        <TextBlock Grid.Column="2" Text="&#x9AD8;&#x8D28; 90%" FontSize="10" Foreground="{DynamicResource Text3Brush}" FontFamily="Consolas" HorizontalAlignment="Right"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- 体积预估 -->
+                            <Border Padding="16,14">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="&#x6587;&#x4EF6;&#x4F53;&#x79EF;&#x9884;&#x4F30;" FontSize="11" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC"/>
+                                        <TextBlock x:Name="EstimateImagesText" Text="&#x56FE;&#x7247;&#xFF08;0 &#x5F20;&#xFF09;" FontSize="10.5"
+                                                   Foreground="{DynamicResource Text3Brush}" FontFamily="Consolas" Margin="0,1,0,0"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock x:Name="EstimateSize" Text="0" FontSize="18" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource TextBrush}" FontFamily="Consolas"/>
+                                        <TextBlock Text=" MB" FontSize="12" Foreground="{DynamicResource Text2Brush}" VerticalAlignment="Center" Margin="2,0,0,0"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
+
+        <Border x:Name="StatusBarBg" Grid.Row="3" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0">
+            <StackPanel Orientation="Horizontal" Margin="20,0" VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal">
+                    <Ellipse Width="5" Height="5" Fill="{DynamicResource SuccessBrush}" Margin="0,0,5,0"/>
+                    <TextBlock x:Name="StatusImageCount" Text="0 &#x5F20;&#x56FE;&#x7247;" FontSize="11" Foreground="{DynamicResource Text3Brush}" FontFamily="Consolas"/>
+                </StackPanel>
+                <TextBlock x:Name="StatusEstimate" Text="&#x9884;&#x8BA1;&#x4F53;&#x79EF; ~0 MB" FontSize="11" Foreground="{DynamicResource Text3Brush}" FontFamily="Consolas" Margin="16,0,0,0"/>
+                <TextBlock x:Name="StatusQuality" Text="&#x538B;&#x7F29;&#x8D28;&#x91CF; 75%" FontSize="11" Foreground="{DynamicResource Text3Brush}" FontFamily="Consolas" Margin="16,0,0,0"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

@@ -1,0 +1,16 @@
+<Application x:Class="PicScreenSaver.Maker.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Startup="Application_Startup"
+             Exit="Application_Exit"
+             StartupUri="MainWindow.xaml"
+             ShutdownMode="OnLastWindowClose">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Themes/Light.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <DropShadowEffect x:Key="ToastShadow" BlurRadius="12" ShadowDepth="2" Color="#000000" Opacity="0.25"/>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

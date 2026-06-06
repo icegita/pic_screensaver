@@ -1,0 +1,209 @@
+using System;
+using System.Runtime.InteropServices;
+using System.Windows;
+using System.Windows.Input;
+using System.Windows.Interop;
+using System.Windows.Threading;
+using PicScreenSaver.Runtime.Engine;
+
+namespace PicScreenSaver.Runtime
+{
+    public partial class ScreensaverWindow : Window
+    {
+        private readonly ScreensaverConfig _config;
+        private readonly bool _isPreview;
+        private SlideEngine _engine;
+        private DispatcherTimer _exitMonitor;
+        private bool _isExiting = false;
+        private Point _lastMousePos;
+        private IntPtr _previewParentHandle;
+
+        public ScreensaverWindow(ScreensaverConfig config, bool isPreview)
+            : this(config, isPreview, IntPtr.Zero)
+        {
+        }
+
+        public ScreensaverWindow(ScreensaverConfig config, bool isPreview, IntPtr parentHandle)
+        {
+            InitializeComponent();
+            _config = config;
+            _isPreview = isPreview;
+
+            if (_isPreview && parentHandle != IntPtr.Zero)
+            {
+                SetupPreviewStyle();
+                _previewParentHandle = parentHandle;
+                SourceInitialized += OnPreviewSourceInitialized;
+            }
+            else
+            {
+                SetupFullscreen();
+            }
+        }
+
+        private void SetupFullscreen()
+        {
+            WindowState = WindowState.Normal;
+            WindowStyle = WindowStyle.None;
+            ResizeMode = ResizeMode.NoResize;
+            Background = System.Windows.Media.Brushes.Black;
+            ShowInTaskbar = false;
+            Topmost = true;
+            Cursor = Cursors.None;
+
+            // 全屏覆盖整个屏幕（含任务栏区域）
+            WindowState = WindowState.Maximized;
+        }
+
+        private void SetupPreviewStyle()
+        {
+            WindowState = WindowState.Normal;
+            WindowStyle = WindowStyle.None;
+            ResizeMode = ResizeMode.NoResize;
+            AllowsTransparency = false;
+            ShowInTaskbar = false;
+            Topmost = false;
+        }
+
+        private void OnPreviewSourceInitialized(object sender, EventArgs e)
+        {
+            var helper = new WindowInteropHelper(this);
+            SetParent(helper.Handle, _previewParentHandle);
+
+            var parentRect = new RECT();
+            GetClientRect(_previewParentHandle, out parentRect);
+            Width = parentRect.Right - parentRect.Left;
+            Height = parentRect.Bottom - parentRect.Top;
+            Left = 0;
+            Top = 0;
+
+            var parentTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+            parentTimer.Tick += (s, args) =>
+            {
+                if (!IsWindow(_previewParentHandle) || !IsWindowVisible(_previewParentHandle))
+                {
+                    parentTimer.Stop();
+                    ExitScreensaver();
+                }
+            };
+            parentTimer.Start();
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (_config.ImageCount == 0)
+            {
+                Close();
+                return;
+            }
+
+            _engine = new SlideEngine(_config, OutgoingImage, IncomingImage);
+            _engine.Start();
+
+            if (!_isPreview)
+            {
+                POINT initialPos;
+                GetCursorPos(out initialPos);
+                _lastMousePos = new Point(initialPos.X, initialPos.Y);
+
+                _exitMonitor = new DispatcherTimer();
+                _exitMonitor.Interval = TimeSpan.FromMilliseconds(100);
+                int tickCount = 0;
+                _exitMonitor.Tick += (s, args) =>
+                {
+                    tickCount++;
+                    if (tickCount < 5) return;
+
+                    POINT currentPos;
+                    GetCursorPos(out currentPos);
+
+                    int dx = Math.Abs(currentPos.X - (int)_lastMousePos.X);
+                    int dy = Math.Abs(currentPos.Y - (int)_lastMousePos.Y);
+
+                    if (dx > 5 || dy > 5)
+                    {
+                        ExitScreensaver();
+                        return;
+                    }
+                    _lastMousePos = new Point(currentPos.X, currentPos.Y);
+                };
+                _exitMonitor.Start();
+            }
+        }
+
+        private void Window_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (_isPreview) return;
+            POINT currentPos;
+            GetCursorPos(out currentPos);
+            int dx = Math.Abs(currentPos.X - (int)_lastMousePos.X);
+            int dy = Math.Abs(currentPos.Y - (int)_lastMousePos.Y);
+            if (dx > 5 || dy > 5) ExitScreensaver();
+            _lastMousePos = new Point(currentPos.X, currentPos.Y);
+        }
+
+        private void Window_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (!_isPreview) ExitScreensaver();
+        }
+
+        private void Window_MouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (!_isPreview) ExitScreensaver();
+        }
+
+        private void Window_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (!_isPreview) ExitScreensaver();
+        }
+
+        private void ExitScreensaver()
+        {
+            if (_isExiting) return;
+            _isExiting = true;
+
+            _exitMonitor?.Stop();
+            _engine?.Stop();
+
+            OutgoingImage.Source = null;
+            IncomingImage.Source = null;
+
+            Topmost = false;
+            Close();
+            Application.Current?.Shutdown(0);
+        }
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr SetParent(IntPtr hWndChild, IntPtr hWndNewParent);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool IsWindow(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool IsWindowVisible(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        private static extern bool GetClientRect(IntPtr hWnd, out RECT lpRect);
+
+        [DllImport("user32.dll")]
+        private static extern bool GetCursorPos(out POINT lpPoint);
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct RECT
+        {
+            public int Left;
+            public int Top;
+            public int Right;
+            public int Bottom;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct POINT
+        {
+            public int X;
+            public int Y;
+        }
+    }
+}
