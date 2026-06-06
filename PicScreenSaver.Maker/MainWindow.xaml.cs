@@ -1449,6 +1449,19 @@ namespace PicScreenSaver.Maker
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e) { }
 
+        private void RootBorder_Loaded(object sender, RoutedEventArgs e)
+        {
+            UpdateBorderClip();
+            RootBorder.SizeChanged += (s, ev) => UpdateBorderClip();
+        }
+
+        private void UpdateBorderClip()
+        {
+            if (RootBorder.ActualWidth > 0 && RootBorder.ActualHeight > 0)
+                RootBorder.Clip = new RectangleGeometry(
+                    new Rect(0, 0, RootBorder.ActualWidth, RootBorder.ActualHeight), 10, 10);
+        }
+
         private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ClickCount == 2) MaximizeBtn_Click(sender, e);

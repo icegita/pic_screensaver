@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="PicScreenSaver" Width="975" Height="650" MinWidth="975" MinHeight="650"
         WindowStartupLocation="CenterScreen"
-        Background="{DynamicResource BgBrush}"
+        Background="Transparent"
         WindowStyle="None"
         ResizeMode="CanResizeWithGrip"
         AllowsTransparency="True"
@@ -230,6 +230,7 @@
             </Setter>
         </Style>
     </Window.Resources>
+    <Border x:Name="RootBorder" Background="{DynamicResource BgBrush}" CornerRadius="10" ClipToBounds="True" Loaded="RootBorder_Loaded">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="44"/>
@@ -701,4 +702,5 @@
             </StackPanel>
         </Border>
     </Grid>
+    </Border>
 </Window>
