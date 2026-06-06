@@ -423,7 +423,7 @@
 
                 <!-- 左栏：播放 + 压缩 + 体积 -->
                 <StackPanel Grid.Column="0">
-                    <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10" Margin="0,0,0,20" Padding="0,0,0,4">
+                    <Border MinHeight="{Binding ElementName=RightCardBorder, Path=ActualHeight}" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10" Margin="0,0,0,20" Padding="0,0,0,4">
                         <StackPanel>
                             <!-- 播放时长 -->
                             <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="16,14">
@@ -534,7 +534,7 @@
 
                 <!-- 右栏：输出 -->
                 <StackPanel Grid.Column="2">
-                    <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="0,0,0,4">
+                    <Border x:Name="RightCardBorder" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="0,0,0,4">
                         <StackPanel>
                             <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="16,14">
                                 <TextBlock Text="&#x8F93;&#x51FA;" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC"/>
