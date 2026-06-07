@@ -412,14 +412,14 @@
                 </Border>
             </Grid>
 
-            <Grid x:Name="EffectsPanel" Visibility="Collapsed">
+            <Grid x:Name="EffectsPanel" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Top" Height="504">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="631"/>
                     <ColumnDefinition Width="16"/>
                     <ColumnDefinition Width="280"/>
                 </Grid.ColumnDefinitions>
                 <!-- 左栏：效果列表 -->
-                <Border Grid.Column="0" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10" ClipToBounds="True">
+                <Border Grid.Column="0" Height="504" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10" ClipToBounds="True">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -449,7 +449,7 @@
                     </Grid>
                 </Border>
                 <!-- 右栏：预览 + 描述 -->
-                <Border Grid.Column="2" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10" ClipToBounds="True">
+                <Border Grid.Column="2" Height="504" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10" ClipToBounds="True">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -488,15 +488,15 @@
                 </Border>
             </Grid>
 
-            <Grid x:Name="SettingsPanel" Visibility="Collapsed">
+            <Grid x:Name="SettingsPanel" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Top" Height="504">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="631"/>
                     <ColumnDefinition Width="16"/>
                     <ColumnDefinition Width="280"/>
                 </Grid.ColumnDefinitions>
 
                 <!-- 左栏：输出 -->
-                <Border Grid.Column="0" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10" ClipToBounds="True">
+                <Border Grid.Column="0" Height="504" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10" ClipToBounds="True">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -572,7 +572,7 @@
                 </Border>
 
                 <!-- 右栏：播放 + 压缩 + 体积 -->
-                <Border Grid.Column="2" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10" ClipToBounds="True">
+                <Border Grid.Column="2" Height="504" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10" ClipToBounds="True">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
