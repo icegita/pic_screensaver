@@ -1228,6 +1228,43 @@ namespace PicScreenSaver.Maker
             return $"{bytes / (1024.0 * 1024.0):F1} MB";
         }
 
+        private void PreviewBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (_images.Count == 0) { ShowToast("请先添加图片"); return; }
+            if (_selectedEffects.Count == 0) { ShowToast("请至少选择一种过渡效果"); return; }
+
+            byte[] runtimeTemplate;
+            try { runtimeTemplate = PackageBuilder.LoadEmbeddedRuntime(); }
+            catch { ShowToast("找不到运行时模板文件"); return; }
+
+            var config = new ScreensaverConfig
+            {
+                Version = "1.4",
+                Title = SaverNameInput.Text.Trim(),
+                DisplayDuration = _displayDuration,
+                TransitionDuration = _transitionDuration,
+                ShuffleImages = OrderRandom.IsChecked == true,
+                SelectedEffects = _selectedEffects.ToArray(),
+                ImageCount = _images.Count,
+                CreatedBy = "PicScreenSaver v1.0",
+                CreatedAt = DateTime.UtcNow.ToString("o")
+            };
+
+            var tempPath = Path.Combine(Path.GetTempPath(), "PicScreenSaver_Preview.scr");
+            try
+            {
+                _packageBuilder.BuildPackage(runtimeTemplate, config, _images, tempPath);
+                var psi = new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = tempPath,
+                    Arguments = "/t",
+                    UseShellExecute = false
+                };
+                System.Diagnostics.Process.Start(psi);
+            }
+            catch (Exception ex) { ShowToast($"预览失败：{ex.Message}", 4000); }
+        }
+
         private void GenerateBtn_Click(object sender, RoutedEventArgs e)
         {
             if (_images.Count == 0) { ShowToast("请先添加图片"); return; }

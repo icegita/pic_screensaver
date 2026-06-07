@@ -300,6 +300,12 @@
                             Click="SaveProject_Click"
                             Background="{DynamicResource Surface2Brush}" Foreground="{DynamicResource Text2Brush}" BorderBrush="{DynamicResource BorderBrush}"
                             BorderThickness="1" Padding="14,0" Height="30" FontSize="12"
+                            Style="{StaticResource RoundedButtonStyle}" FontFamily="Noto Sans SC" Cursor="Hand"/>
+                    <Border Width="1" Background="{DynamicResource BorderBrush}" Margin="12,4"/>
+                    <Button x:Name="PreviewBtn" Content="&#x9884;&#x89C8;"
+                            Click="PreviewBtn_Click"
+                            Background="{DynamicResource Surface2Brush}" Foreground="{DynamicResource Text2Brush}" BorderBrush="{DynamicResource BorderBrush}"
+                            BorderThickness="1" Padding="14,0" Height="30" FontSize="12"
                             Style="{StaticResource RoundedButtonStyle}" FontFamily="Noto Sans SC" Cursor="Hand" Margin="0,0,6,0"/>
                     <Button x:Name="GenerateBtn" Content="&#x751F;&#x6210; .scr"
                             Click="GenerateBtn_Click"
