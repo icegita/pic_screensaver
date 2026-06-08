@@ -18,6 +18,7 @@ packages/
 Thumbs.db
 
 # Design doc backup
+.docs/
 PROGRESS_REPORT.md
 AGENTS.md
 PRODUCT_ v1.4.md
