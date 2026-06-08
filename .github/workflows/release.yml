@@ -11,12 +11,12 @@ permissions:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: windows-2025
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v2
+        uses: microsoft/setup-msbuild@v3
 
       - name: Restore
         run: msbuild PicScreenSaver.sln -t:Restore
@@ -38,10 +38,11 @@ jobs:
           $outputDir = "release"
           New-Item -ItemType Directory -Path $outputDir -Force
 
-          Copy-Item "PicScreenSaver.Maker/bin/Release/net48/PicScreenSaver v1.0.exe" -Destination "$outputDir/PicScreenSaver-${version}.exe"
+          $exe = Get-ChildItem "PicScreenSaver.Maker/bin/Release/net48/*.exe" | Select-Object -First 1
+          Copy-Item $exe.FullName -Destination "$outputDir/PicScreenSaver-${version}.exe"
 
       - name: Create Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           name: ${{ steps.version.outputs.VERSION }}
           generate_release_notes: true
