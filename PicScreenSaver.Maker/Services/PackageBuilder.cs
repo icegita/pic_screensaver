@@ -12,25 +12,26 @@ namespace PicScreenSaver.Maker.Services
     public class PackageBuilder
     {
         [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-        private static extern IntPtr BeginUpdateResource(string pFileName, [MarshalAs(UnmanagedType.Bool)] bool bDeleteExistingResources);
+        private static extern IntPtr BeginUpdateResource(string pFileName,
+            [MarshalAs(UnmanagedType.Bool)] bool bDeleteExistingResources);
 
         [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-        private static extern bool UpdateResource(IntPtr hUpdate, string lpType, IntPtr lpName, ushort wLanguage, byte[] lpData, uint cb);
+        private static extern bool UpdateResource(IntPtr hUpdate, string lpType, IntPtr lpName,
+            ushort wLanguage, byte[] lpData, uint cb);
 
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool EndUpdateResource(IntPtr hUpdate, [MarshalAs(UnmanagedType.Bool)] bool fDiscard);
+        private static extern bool EndUpdateResource(IntPtr hUpdate,
+            [MarshalAs(UnmanagedType.Bool)] bool fDiscard);
 
         private const string CONFIG_RESOURCE = "SSCONFIG";
-        private const string IMAGE_RESOURCE = "SSIMAGE";
+        private const string IMAGE_RESOURCE  = "SSIMAGE";
 
-        /// <summary>
-        /// 从嵌入资源加载 Runtime.exe 模板（单文件分发用）
-        /// </summary>
         public static byte[] LoadEmbeddedRuntime()
         {
             var asm = Assembly.GetExecutingAssembly();
-            using (var stream = asm.GetManifestResourceStream("PicScreenSaver.Maker.Resources.PicScreenSaver.Runtime.exe"))
+            using (var stream = asm.GetManifestResourceStream(
+                "PicScreenSaver.Maker.Resources.PicScreenSaver.Runtime.exe"))
             {
                 if (stream == null)
                     throw new InvalidOperationException("嵌入的 Runtime.exe 未找到");
@@ -40,13 +41,11 @@ namespace PicScreenSaver.Maker.Services
             }
         }
 
-        /// <summary>
-        /// 从嵌入资源加载预览图片
-        /// </summary>
         public static byte[] LoadEmbeddedImage(string name)
         {
             var asm = Assembly.GetExecutingAssembly();
-            using (var stream = asm.GetManifestResourceStream("PicScreenSaver.Maker.Resources." + name))
+            using (var stream = asm.GetManifestResourceStream(
+                "PicScreenSaver.Maker.Resources." + name))
             {
                 if (stream == null) return null;
                 var bytes = new byte[stream.Length];
@@ -55,13 +54,17 @@ namespace PicScreenSaver.Maker.Services
             }
         }
 
+        // Bug修复 #2：新增 quality 参数，生成时按当前质量重新编码所有图片
         public string BuildPackage(
             byte[] runtimeTemplate,
             ScreensaverConfig config,
             List<ImageItem> images,
-            string outputPath)
+            string outputPath,
+            int quality = 75,
+            int maxWidth = 1920)
         {
-            string tempPath = Path.Combine(Path.GetTempPath(), "PicScreenSaver_" + Guid.NewGuid().ToString("N") + ".exe");
+            string tempPath = Path.Combine(Path.GetTempPath(),
+                "PicScreenSaver_" + Guid.NewGuid().ToString("N") + ".exe");
 
             try
             {
@@ -69,42 +72,56 @@ namespace PicScreenSaver.Maker.Services
 
                 var hUpdate = BeginUpdateResource(tempPath, false);
                 if (hUpdate == IntPtr.Zero)
-                    throw new InvalidOperationException("BeginUpdateResource 失败: " + Marshal.GetLastWin32Error());
+                    throw new InvalidOperationException(
+                        "BeginUpdateResource 失败: " + Marshal.GetLastWin32Error());
 
                 try
                 {
-                    var configJson = JsonConvert.SerializeObject(config, Formatting.None);
+                    // 写入配置 JSON
+                    var configJson  = JsonConvert.SerializeObject(config, Formatting.None);
                     var configBytes = Encoding.UTF8.GetBytes(configJson);
-
-                    var configName = Marshal.StringToHGlobalUni(CONFIG_RESOURCE);
+                    var configName  = Marshal.StringToHGlobalUni(CONFIG_RESOURCE);
                     try
                     {
-                        if (!UpdateResource(hUpdate, CONFIG_RESOURCE, configName, 0, configBytes, (uint)configBytes.Length))
-                            throw new InvalidOperationException("UpdateResource SSCONFIG 失败: " + Marshal.GetLastWin32Error());
+                        if (!UpdateResource(hUpdate, CONFIG_RESOURCE, configName, 0,
+                            configBytes, (uint)configBytes.Length))
+                            throw new InvalidOperationException(
+                                "UpdateResource SSCONFIG 失败: " + Marshal.GetLastWin32Error());
                     }
-                    finally
-                    {
-                        Marshal.FreeHGlobal(configName);
-                    }
+                    finally { Marshal.FreeHGlobal(configName); }
 
+                    // Bug修复 #2：按当前 quality 重新编码每张图片写入 PE
                     for (int i = 0; i < images.Count; i++)
                     {
-                        if (images[i].JpegBytes == null) continue;
+                        // 如果源文件存在，按当前 quality 重新编码（保证质量滑块生效）
+                        byte[] jpegData;
+                        if (File.Exists(images[i].FilePath))
+                        {
+                            jpegData = ImageProcessor.GetResizedJpegBytes(
+                                images[i].FilePath, quality, maxWidth);
+                        }
+                        else if (images[i].JpegBytes != null)
+                        {
+                            // 源文件不存在时退回到已缓存的数据
+                            jpegData = images[i].JpegBytes;
+                        }
+                        else continue;
 
                         var resName = Marshal.StringToHGlobalUni((i + 1).ToString());
                         try
                         {
-                            if (!UpdateResource(hUpdate, IMAGE_RESOURCE, resName, 0, images[i].JpegBytes, (uint)images[i].JpegBytes.Length))
-                                throw new InvalidOperationException($"UpdateResource SSIMAGE {i + 1} 失败: " + Marshal.GetLastWin32Error());
+                            if (!UpdateResource(hUpdate, IMAGE_RESOURCE, resName, 0,
+                                jpegData, (uint)jpegData.Length))
+                                throw new InvalidOperationException(
+                                    $"UpdateResource SSIMAGE {i + 1} 失败: "
+                                    + Marshal.GetLastWin32Error());
                         }
-                        finally
-                        {
-                            Marshal.FreeHGlobal(resName);
-                        }
+                        finally { Marshal.FreeHGlobal(resName); }
                     }
 
                     if (!EndUpdateResource(hUpdate, false))
-                        throw new InvalidOperationException("EndUpdateResource 失败: " + Marshal.GetLastWin32Error());
+                        throw new InvalidOperationException(
+                            "EndUpdateResource 失败: " + Marshal.GetLastWin32Error());
                 }
                 catch
                 {
@@ -117,8 +134,7 @@ namespace PicScreenSaver.Maker.Services
             }
             finally
             {
-                if (File.Exists(tempPath))
-                    File.Delete(tempPath);
+                if (File.Exists(tempPath)) File.Delete(tempPath);
             }
         }
     }

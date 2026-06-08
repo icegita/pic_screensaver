@@ -25,7 +25,9 @@ namespace PicScreenSaver.Maker
         private double _displayDuration = 10.0;
         private double _transitionDuration = 1.2;
         private int _quality = 75;
+        private int _maxWidth = 1920;
         private string _outputPath = "";
+        private System.Threading.CancellationTokenSource _encodeCts;
         private bool _isDragging = false;
         private int _dragFromIndex = -1;
         private Border _draggedCard = null;
@@ -744,7 +746,7 @@ namespace PicScreenSaver.Maker
             {
                 foreach (var file in dialog.FileNames)
                     if (!_images.Any(img => img.FilePath == file))
-                        _images.Add(_imageProcessor.ProcessImage(file, _quality));
+                        _images.Add(_imageProcessor.ProcessImage(file, _quality, _maxWidth));
                 RefreshImageGrid();
                 UpdateEstimate();
             }
@@ -1203,7 +1205,64 @@ namespace PicScreenSaver.Maker
         private void Btn_MouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e) { _repeatTimer?.Stop(); _repeatFastMode = false; }
         private void Btn_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e) { _repeatTimer?.Stop(); _repeatFastMode = false; }
 
-        private void QualitySlider_ValueChanged(object s, RoutedPropertyChangedEventArgs<double> e) { _quality = (int)e.NewValue; if (QualityValue != null) QualityValue.Text = $"{_quality}%"; if (StatusQuality != null) StatusQuality.Text = $"压缩质量 {_quality}%"; UpdateEstimate(); }
+        private void QualitySlider_ValueChanged(object s, RoutedPropertyChangedEventArgs<double> e)
+        {
+            _quality = (int)e.NewValue;
+            if (QualityValue != null) QualityValue.Text = $"{_quality}%";
+            if (StatusQuality != null) StatusQuality.Text = $"压缩质量 {_quality}%";
+
+            if (_images.Count > 0)
+            {
+                _encodeCts?.Cancel();
+                var cts = new System.Threading.CancellationTokenSource();
+                _encodeCts = cts;
+                int q = _quality;
+                int mw = _maxWidth;
+                System.Threading.Tasks.Task.Run(() =>
+                {
+                    _imageProcessor.UpdateAllJpegBytes(_images, q, mw, cts.Token);
+                    if (!cts.IsCancellationRequested)
+                        Dispatcher.BeginInvoke(new Action(() =>
+                        {
+                            UpdateEstimate();
+                            UpdatePreview();
+                        }));
+                });
+            }
+            else
+            {
+                UpdateEstimate();
+            }
+        }
+
+        private void ResolutionRadio_Click(object sender, RoutedEventArgs e)
+        {
+            var rb = (RadioButton)sender;
+            _maxWidth = int.Parse((string)rb.Tag);
+            if (MaxWidthValue != null) MaxWidthValue.Text = _maxWidth == 0 ? "原图" : _maxWidth.ToString();
+            if (_images.Count > 0)
+            {
+                _encodeCts?.Cancel();
+                var cts = new System.Threading.CancellationTokenSource();
+                _encodeCts = cts;
+                int q = _quality;
+                int mw = _maxWidth;
+                System.Threading.Tasks.Task.Run(() =>
+                {
+                    _imageProcessor.UpdateAllJpegBytes(_images, q, mw, cts.Token);
+                    if (!cts.IsCancellationRequested)
+                        Dispatcher.BeginInvoke(new Action(() =>
+                        {
+                            UpdateEstimate();
+                            UpdatePreview();
+                        }));
+                });
+            }
+            else
+            {
+                UpdateEstimate();
+            }
+        }
 
         private void BrowseOutputPath_Click(object sender, RoutedEventArgs e)
         {
@@ -1246,14 +1305,14 @@ namespace PicScreenSaver.Maker
                 ShuffleImages = OrderRandom.IsChecked == true,
                 SelectedEffects = _selectedEffects.ToArray(),
                 ImageCount = _images.Count,
-                CreatedBy = "PicScreenSaver v1.0",
+                CreatedBy = "PicScreenSaver v" + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString(3),
                 CreatedAt = DateTime.UtcNow.ToString("o")
             };
 
             var tempPath = Path.Combine(Path.GetTempPath(), "PicScreenSaver_Preview.scr");
             try
             {
-                _packageBuilder.BuildPackage(runtimeTemplate, config, _images, tempPath);
+                _packageBuilder.BuildPackage(runtimeTemplate, config, _images, tempPath, _quality, _maxWidth);
                 var psi = new System.Diagnostics.ProcessStartInfo
                 {
                     FileName = tempPath,
@@ -1290,7 +1349,7 @@ namespace PicScreenSaver.Maker
                 ShuffleImages = OrderRandom.IsChecked == true,
                 SelectedEffects = _selectedEffects.ToArray(),
                 ImageCount = _images.Count,
-                CreatedBy = "PicScreenSaver v1.0",
+                CreatedBy = "PicScreenSaver v" + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString(3),
                 CreatedAt = DateTime.UtcNow.ToString("o")
             };
 
@@ -1300,7 +1359,7 @@ namespace PicScreenSaver.Maker
 
             try
             {
-                _packageBuilder.BuildPackage(runtimeTemplate, config, _images, outputPath);
+                _packageBuilder.BuildPackage(runtimeTemplate, config, _images, outputPath, _quality, _maxWidth);
                 if (InstallYes.IsChecked == true) { InstallScreensaver(outputPath); ShowToast($"屏保已生成并安装：{outputName}.scr"); }
                 else ShowToast($"屏保已生成：{outputName}.scr");
             }
@@ -1378,6 +1437,11 @@ namespace PicScreenSaver.Maker
                 TransitionDurationValue.Text = _transitionDuration.ToString("F1");
                 _quality = project.Quality;
                 QualitySlider.Value = _quality;
+                _maxWidth = project.MaxWidth > 0 ? project.MaxWidth : 1920;
+                if (_maxWidth == 0) ResOriginal.IsChecked = true;
+                else if (_maxWidth == 2560) Res2K.IsChecked = true;
+                else Res1080.IsChecked = true;
+                MaxWidthValue.Text = _maxWidth == 0 ? "原图" : _maxWidth.ToString();
                 _outputPath = project.OutputPath ?? _outputPath;
                 OutputPathInput.Text = _outputPath;
                 SaverNameInput.Text = project.SaverName ?? "MyScreensaver";
@@ -1406,7 +1470,7 @@ namespace PicScreenSaver.Maker
                     {
                         if (File.Exists(path))
                         {
-                            var item = _imageProcessor.ProcessImage(path, _quality);
+                            var item = _imageProcessor.ProcessImage(path, _quality, _maxWidth);
                             if (item.JpegBytes != null) _images.Add(item);
                         }
                     }
@@ -1438,6 +1502,7 @@ namespace PicScreenSaver.Maker
                     DisplayDuration = _displayDuration,
                     TransitionDuration = _transitionDuration,
                     Quality = _quality,
+                    MaxWidth = _maxWidth,
                     ShuffleImages = OrderRandom.IsChecked == true,
                     SelectedEffects = _selectedEffects.ToArray(),
                     OutputPath = _outputPath,
@@ -1510,10 +1575,47 @@ namespace PicScreenSaver.Maker
         private void CloseBtn_Click(object s, RoutedEventArgs e) { Close(); }
         private void Window_StateChanged(object s, EventArgs e) { }
 
-        private void WindowBtn_MouseEnter(object s, MouseEventArgs e) { ((Button)s).Foreground = ThemeColors.Brush(ThemeColors.Text); }
-        private void WindowBtn_MouseLeave(object s, MouseEventArgs e) { ((Button)s).Foreground = ThemeColors.Brush(ThemeColors.Text2); }
-        private void CloseBtn_MouseEnter(object s, MouseEventArgs e) { ((Button)s).Foreground = ThemeColors.Brush(ThemeColors.Danger); ((Button)s).Background = ThemeColors.Brush(ThemeColors.DangerBg); }
-        private void CloseBtn_MouseLeave(object s, MouseEventArgs e) { ((Button)s).Foreground = ThemeColors.Brush(ThemeColors.Text2); ((Button)s).Background = Brushes.Transparent; }
+        private void WindowBtn_MouseEnter(object s, MouseEventArgs e)
+        {
+            var btn = (Button)s;
+            UpdateBtnIconColor(btn, ThemeColors.Brush(ThemeColors.Text));
+        }
+        private void WindowBtn_MouseLeave(object s, MouseEventArgs e)
+        {
+            var btn = (Button)s;
+            UpdateBtnIconColor(btn, ThemeColors.Brush(ThemeColors.Text2));
+        }
+        private void CloseBtn_MouseEnter(object s, MouseEventArgs e)
+        {
+            var btn = (Button)s;
+            btn.Background = ThemeColors.Brush(ThemeColors.DangerBg);
+            UpdateCloseBtnColor(btn, ThemeColors.Brush(ThemeColors.Danger));
+        }
+        private void CloseBtn_MouseLeave(object s, MouseEventArgs e)
+        {
+            var btn = (Button)s;
+            btn.Background = Brushes.Transparent;
+            UpdateCloseBtnColor(btn, ThemeColors.Brush(ThemeColors.Text2));
+        }
+
+        private static void UpdateBtnIconColor(Button btn, Brush brush)
+        {
+            if (btn.Content is Viewbox vb)
+            {
+                if (vb.Child is System.Windows.Shapes.Rectangle rect)
+                {
+                    if (rect.StrokeThickness > 0) rect.Stroke = brush;
+                    else rect.Fill = brush;
+                }
+            }
+        }
+
+        private static void UpdateCloseBtnColor(Button btn, Brush brush)
+        {
+            if (btn.Content is Viewbox vb && vb.Child is Grid g)
+                foreach (var child in g.Children)
+                    if (child is System.Windows.Shapes.Line line) line.Stroke = brush;
+        }
 
         private void ThemeToggleBtn_Click(object s, RoutedEventArgs e) { _isDarkTheme = !_isDarkTheme; ApplyTheme(); }
 

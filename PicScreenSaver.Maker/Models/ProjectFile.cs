@@ -18,6 +18,9 @@ namespace PicScreenSaver.Maker.Models
         [JsonProperty("quality")]
         public int Quality { get; set; }
 
+        [JsonProperty("maxWidth")]
+        public int MaxWidth { get; set; }
+
         [JsonProperty("shuffleImages")]
         public bool ShuffleImages { get; set; }
 

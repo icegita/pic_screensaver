@@ -7,117 +7,118 @@ namespace PicScreenSaver.Maker.Services
 {
     public class ImageProcessor
     {
-        private const int MaxWidth = 1920;
-        private const int MaxHeight = 1080;
-
-        public ImageItem ProcessImage(string filePath, int quality)
+        public ImageItem ProcessImage(string filePath, int quality, int maxWidth = 1920)
         {
             var item = new ImageItem
             {
                 FilePath = filePath,
-                FileName = System.IO.Path.GetFileName(filePath)
+                FileName = Path.GetFileName(filePath)
             };
 
             try
             {
-                var originalBytes = File.ReadAllBytes(filePath);
-                item.OriginalSize = originalBytes.Length;
+                item.OriginalSize = new FileInfo(filePath).Length;
 
-                using (var ms = new MemoryStream(originalBytes))
-                {
-                    var original = new BitmapImage();
-                    original.BeginInit();
-                    original.CacheOption = BitmapCacheOption.OnLoad;
-                    original.StreamSource = ms;
-                    original.EndInit();
-                    original.Freeze();
+                // Bug修复 #3：先用 DecodePixelWidth=480 低分辨率解码读取元信息和缩略图
+                // 避免把 4K 原图整张解码进内存导致 OOM 或失败
+                var thumbnailBitmap = new BitmapImage();
+                thumbnailBitmap.BeginInit();
+                thumbnailBitmap.CacheOption     = BitmapCacheOption.OnLoad;
+                thumbnailBitmap.UriSource       = new Uri(filePath, UriKind.Absolute);
+                thumbnailBitmap.DecodePixelWidth = 480;  // 只解码到 480px 宽，内存占用极小
+                thumbnailBitmap.EndInit();
+                thumbnailBitmap.Freeze();
 
-                    item.OriginalWidth = original.PixelWidth;
-                    item.OriginalHeight = original.PixelHeight;
+                // 用低分辨率版本读取宽高（需要通过实际文件获取真实分辨率）
+                // 用完整解码版本获取原始尺寸
+                var metaBitmap = new BitmapImage();
+                metaBitmap.BeginInit();
+                metaBitmap.CacheOption     = BitmapCacheOption.OnLoad;
+                metaBitmap.UriSource       = new Uri(filePath, UriKind.Absolute);
+                // 不限制解码尺寸，只读 metadata（CreateOptions 加速读取）
+                metaBitmap.CreateOptions   = BitmapCreateOptions.DelayCreation;
+                metaBitmap.EndInit();
 
-                    var thumbnail = CreateThumbnail(original, 480, 300);
-                    item.Thumbnail = thumbnail;
+                item.OriginalWidth  = metaBitmap.PixelWidth;
+                item.OriginalHeight = metaBitmap.PixelHeight;
 
-                    var jpegBytes = EncodeToJpeg(original, quality);
-                    item.JpegBytes = jpegBytes;
-                    item.CompressedSize = jpegBytes.Length;
-                }
+                // 缩略图直接用低分辨率解码结果，已经是 480px 宽
+                item.Thumbnail = thumbnailBitmap;
+
+                // Bug修复 #2：不在这里生成 JpegBytes，改为调用 ReEncodeWithQuality()
+                // 这里做一次默认 quality 的编码，仅用于初始体积估算显示
+                item.JpegBytes     = EncodeToJpeg(filePath, quality, maxWidth);
+                item.CompressedSize = item.JpegBytes.Length;
             }
             catch
             {
-                item.OriginalWidth = 0;
+                item.OriginalWidth  = 0;
                 item.OriginalHeight = 0;
-                item.OriginalSize = 0;
+                item.OriginalSize   = 0;
                 item.CompressedSize = 0;
-                item.JpegBytes = null;
+                item.JpegBytes      = null;
             }
 
             return item;
         }
 
-        private BitmapImage CreateThumbnail(BitmapImage source, int maxWidth, int maxHeight)
+        // Bug修复 #2：新增方法，按指定 quality 重新编码单张图片
+        // 生成时调用此方法确保使用当前滑块的 quality 值
+        public byte[] ReEncodeWithQuality(string filePath, int quality, int maxWidth = 1920)
         {
-            double scale = Math.Min((double)maxWidth / source.PixelWidth, (double)maxHeight / source.PixelHeight);
-            if (scale > 1.0) scale = 1.0;
-
-            int thumbWidth = (int)(source.PixelWidth * scale);
-            int thumbHeight = (int)(source.PixelHeight * scale);
-
-            var group = new System.Windows.Media.DrawingGroup();
-            System.Windows.Media.RenderOptions.SetBitmapScalingMode(group, System.Windows.Media.BitmapScalingMode.HighQuality);
-            group.Children.Add(new System.Windows.Media.ImageDrawing(source, new System.Windows.Rect(0, 0, thumbWidth, thumbHeight)));
-
-            var drawingVisual = new System.Windows.Media.DrawingVisual();
-            using (var context = drawingVisual.RenderOpen())
-            {
-                context.DrawDrawing(group);
-            }
-
-            var formattedBitmap = new RenderTargetBitmap(thumbWidth, thumbHeight, 96, 96, System.Windows.Media.PixelFormats.Pbgra32);
-            formattedBitmap.Render(drawingVisual);
-
-            var bitmap = new BitmapImage();
-            using (var ms = new MemoryStream())
-            {
-                var encoder = new PngBitmapEncoder();
-                encoder.Frames.Add(BitmapFrame.Create(formattedBitmap));
-                encoder.Save(ms);
-                ms.Position = 0;
-
-                bitmap.BeginInit();
-                bitmap.CacheOption = BitmapCacheOption.OnLoad;
-                bitmap.StreamSource = ms;
-                bitmap.EndInit();
-                bitmap.Freeze();
-            }
-
-            return bitmap;
+            return EncodeToJpeg(filePath, quality, maxWidth);
         }
 
-        private byte[] EncodeToJpeg(BitmapImage source, int quality)
+        // Bug修复 #2：批量重新编码所有图片（质量滑块变化时刷新体积估算）
+        public void UpdateAllJpegBytes(System.Collections.Generic.List<ImageItem> images, int quality, int maxWidth = 1920, System.Threading.CancellationToken ct = default)
         {
-            int width = source.PixelWidth;
+            foreach (var item in images)
+            {
+                if (ct.IsCancellationRequested) return;
+                if (!File.Exists(item.FilePath)) continue;
+                try
+                {
+                    var bytes = EncodeToJpeg(item.FilePath, quality, maxWidth);
+                    if (ct.IsCancellationRequested) return;
+                    item.JpegBytes      = bytes;
+                    item.CompressedSize = bytes.Length;
+                }
+                catch { }
+            }
+        }
+
+        // 核心编码方法：从原始文件路径读取 → 降采样 → JPEG 编码
+        private byte[] EncodeToJpeg(string filePath, int quality, int maxWidth = 1920)
+        {
+            var source = new BitmapImage();
+            source.BeginInit();
+            source.CacheOption = BitmapCacheOption.OnLoad;
+            source.UriSource   = new Uri(filePath, UriKind.Absolute);
+            source.EndInit();
+            source.Freeze();
+
+            int width  = source.PixelWidth;
             int height = source.PixelHeight;
 
-            if (width > MaxWidth || height > MaxHeight)
+            if (maxWidth > 0)
             {
-                double scale = Math.Min((double)MaxWidth / width, (double)MaxHeight / height);
-                width = (int)(width * scale);
-                height = (int)(height * scale);
+                int maxHeight = maxWidth * 9 / 16;
+                if (width > maxWidth || height > maxHeight)
+                {
+                    double scale = Math.Min((double)maxWidth / width, (double)maxHeight / height);
+                    width  = (int)(width  * scale);
+                    height = (int)(height * scale);
+                }
             }
 
-            var target = new RenderTargetBitmap(width, height, 96, 96, System.Windows.Media.PixelFormats.Pbgra32);
+            var target = new RenderTargetBitmap(width, height, 96, 96,
+                System.Windows.Media.PixelFormats.Pbgra32);
             var visual = new System.Windows.Media.DrawingVisual();
-
-            using (var context = visual.RenderOpen())
-            {
-                context.DrawImage(source, new System.Windows.Rect(0, 0, width, height));
-            }
-
+            using (var ctx = visual.RenderOpen())
+                ctx.DrawImage(source, new System.Windows.Rect(0, 0, width, height));
             target.Render(visual);
 
-            var encoder = new JpegBitmapEncoder();
-            encoder.QualityLevel = quality;
+            var encoder = new JpegBitmapEncoder { QualityLevel = quality };
             encoder.Frames.Add(BitmapFrame.Create(target));
 
             using (var ms = new MemoryStream())
@@ -127,30 +128,39 @@ namespace PicScreenSaver.Maker.Services
             }
         }
 
-        public static byte[] GetResizedJpegBytes(BitmapImage source, int quality, int maxWidth = 1920, int maxHeight = 1080)
+        // 保留此方法供外部调用（PackageBuilder 不再直接用 JpegBytes，改用此方法）
+        public static byte[] GetResizedJpegBytes(string filePath, int quality,
+            int maxWidth = 1920, int maxHeight = 0)
         {
-            int width = source.PixelWidth;
+            var source = new BitmapImage();
+            source.BeginInit();
+            source.CacheOption = BitmapCacheOption.OnLoad;
+            source.UriSource   = new Uri(filePath, UriKind.Absolute);
+            source.EndInit();
+            source.Freeze();
+
+            int width  = source.PixelWidth;
             int height = source.PixelHeight;
 
-            if (width > maxWidth || height > maxHeight)
+            if (maxWidth > 0)
             {
-                double scale = Math.Min((double)maxWidth / width, (double)maxHeight / height);
-                width = (int)(width * scale);
-                height = (int)(height * scale);
+                if (maxHeight <= 0) maxHeight = maxWidth * 9 / 16;
+                if (width > maxWidth || height > maxHeight)
+                {
+                    double scale = Math.Min((double)maxWidth / width, (double)maxHeight / height);
+                    width  = (int)(width  * scale);
+                    height = (int)(height * scale);
+                }
             }
 
-            var target = new RenderTargetBitmap(width, height, 96, 96, System.Windows.Media.PixelFormats.Pbgra32);
+            var target = new RenderTargetBitmap(width, height, 96, 96,
+                System.Windows.Media.PixelFormats.Pbgra32);
             var visual = new System.Windows.Media.DrawingVisual();
-
-            using (var context = visual.RenderOpen())
-            {
-                context.DrawImage(source, new System.Windows.Rect(0, 0, width, height));
-            }
-
+            using (var ctx = visual.RenderOpen())
+                ctx.DrawImage(source, new System.Windows.Rect(0, 0, width, height));
             target.Render(visual);
 
-            var encoder = new JpegBitmapEncoder();
-            encoder.QualityLevel = quality;
+            var encoder = new JpegBitmapEncoder { QualityLevel = quality };
             encoder.Frames.Add(BitmapFrame.Create(target));
 
             using (var ms = new MemoryStream())

@@ -14,9 +14,7 @@ namespace PicScreenSaver.Runtime.Engine.Transitions
 
         private BlindsTransition(string id, string name, string description)
         {
-            Id = id;
-            Name = name;
-            Description = description;
+            Id = id; Name = name; Description = description;
         }
 
         public static readonly BlindsTransition BlindsH = new BlindsTransition(
@@ -27,27 +25,35 @@ namespace PicScreenSaver.Runtime.Engine.Transitions
 
         public Storyboard Build(FrameworkElement outgoing, FrameworkElement incoming, double duration)
         {
-            switch (Id)
-            {
-                case "BlindsH": return BuildBlinds(outgoing, incoming, duration, true);
-                case "BlindsV": return BuildBlinds(outgoing, incoming, duration, false);
-                default: return BuildBlinds(outgoing, incoming, duration, true);
-            }
+            bool horizontal = (Id == "BlindsH");
+            return BuildBlinds(outgoing, incoming, duration, horizontal);
         }
 
-        private Storyboard BuildBlinds(FrameworkElement outgoing, FrameworkElement incoming, double duration, bool horizontal)
+        private Storyboard BuildBlinds(FrameworkElement outgoing, FrameworkElement incoming,
+            double duration, bool horizontal)
         {
-            var sb = new Storyboard(); sb.Duration = new Duration(TimeSpan.FromSeconds(duration));
-            var time = TimeSpan.FromSeconds(duration);
+            var sb = new Storyboard();
+            sb.Duration = new Duration(TimeSpan.FromSeconds(duration));
+
             double w = outgoing.ActualWidth;
             double h = outgoing.ActualHeight;
-            int count = 10;
+            const int count = 10;
 
             incoming.Opacity = 1.0;
             outgoing.Opacity = 1.0;
             Panel.SetZIndex(incoming, 1);
 
-            var anim = new BlindsGeometryAnimation(w, h, count, horizontal, time);
+            // 优化：预先分配好所有条带的 RectangleGeometry，每帧只修改 Rect，不 new 对象
+            var group = new GeometryGroup();
+            var strips = new RectangleGeometry[count];
+            for (int i = 0; i < count; i++)
+            {
+                strips[i] = new RectangleGeometry(new Rect(0, 0, 0, 0));
+                group.Children.Add(strips[i]);
+            }
+
+            var anim = new BlindsGeometryAnimation(w, h, count, horizontal,
+                TimeSpan.FromSeconds(duration), group, strips);
             Storyboard.SetTarget(anim, incoming);
             Storyboard.SetTargetProperty(anim, new PropertyPath(UIElement.ClipProperty));
             sb.Children.Add(anim);
@@ -61,28 +67,42 @@ namespace PicScreenSaver.Runtime.Engine.Transitions
     {
         public override Type TargetPropertyType => typeof(Geometry);
 
-        private double _w, _h;
-        private int _count;
-        private bool _horizontal;
-        private TimeSpan _duration;
+        private readonly double _w, _h;
+        private readonly int _count;
+        private readonly bool _horizontal;
+        private readonly TimeSpan _duration;
 
-        public BlindsGeometryAnimation(double w, double h, int count, bool horizontal, TimeSpan duration)
+        // 优化：复用同一批 RectangleGeometry 对象，每帧只改 Rect
+        private readonly GeometryGroup _group;
+        private readonly RectangleGeometry[] _strips;
+
+        public BlindsGeometryAnimation(double w, double h, int count, bool horizontal,
+            TimeSpan duration, GeometryGroup group, RectangleGeometry[] strips)
         {
-            _w = w; _h = h; _count = count; _horizontal = horizontal; _duration = duration;
+            _w = w; _h = h; _count = count; _horizontal = horizontal;
+            _duration = duration; _group = group; _strips = strips;
         }
 
         protected override Freezable CreateInstanceCore()
         {
-            return new BlindsGeometryAnimation(_w, _h, _count, _horizontal, _duration);
+            // 注意：CreateInstanceCore 要求返回新实例，但动画实际运行时走 GetCurrentValue
+            var newGroup = new GeometryGroup();
+            var newStrips = new RectangleGeometry[_count];
+            for (int i = 0; i < _count; i++)
+            {
+                newStrips[i] = new RectangleGeometry(new Rect(0, 0, 0, 0));
+                newGroup.Children.Add(newStrips[i]);
+            }
+            return new BlindsGeometryAnimation(_w, _h, _count, _horizontal, _duration, newGroup, newStrips);
         }
 
-        public override object GetCurrentValue(object defaultOriginValue, object defaultDestinationValue, AnimationClock clock)
+        public override object GetCurrentValue(object defaultOriginValue,
+            object defaultDestinationValue, AnimationClock clock)
         {
-            if (clock == null || clock.CurrentProgress == null)
-                return new RectangleGeometry(new Rect(0, 0, 0, 0));
+            if (clock?.CurrentProgress == null)
+                return _group;
 
             double t = clock.CurrentProgress.Value;
-            var group = new GeometryGroup();
 
             if (_horizontal)
             {
@@ -90,8 +110,10 @@ namespace PicScreenSaver.Runtime.Engine.Transitions
                 for (int i = 0; i < _count; i++)
                 {
                     double sh = stripH * t;
-                    if (sh > 0.5)
-                        group.Children.Add(new RectangleGeometry(new Rect(0, i * stripH, _w, sh)));
+                    // 直接修改已有 RectangleGeometry，不 new
+                    _strips[i].Rect = sh > 0.5
+                        ? new Rect(0, i * stripH, _w, sh)
+                        : new Rect(0, 0, 0, 0);
                 }
             }
             else
@@ -100,15 +122,13 @@ namespace PicScreenSaver.Runtime.Engine.Transitions
                 for (int i = 0; i < _count; i++)
                 {
                     double sw = stripW * t;
-                    if (sw > 0.5)
-                        group.Children.Add(new RectangleGeometry(new Rect(i * stripW, 0, sw, _h)));
+                    _strips[i].Rect = sw > 0.5
+                        ? new Rect(i * stripW, 0, sw, _h)
+                        : new Rect(0, 0, 0, 0);
                 }
             }
 
-            if (group.Children.Count == 0)
-                return new RectangleGeometry(new Rect(0, 0, 0, 0));
-
-            return group;
+            return _group;
         }
     }
 }

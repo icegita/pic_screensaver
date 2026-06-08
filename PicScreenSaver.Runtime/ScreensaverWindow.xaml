@@ -5,7 +5,6 @@
         WindowStyle="None"
         WindowState="Maximized"
         ResizeMode="NoResize"
-        AllowsTransparency="True"
         Background="Black"
         ShowInTaskbar="False"
         Topmost="True"
@@ -16,7 +15,7 @@
         MouseWheel="Window_MouseWheel"
         KeyDown="Window_KeyDown">
     <Grid>
-        <Image x:Name="OutgoingImage" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality" />
-        <Image x:Name="IncomingImage" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality" />
+        <Image x:Name="OutgoingImage" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="LowQuality" />
+        <Image x:Name="IncomingImage" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="LowQuality" />
     </Grid>
 </Window>

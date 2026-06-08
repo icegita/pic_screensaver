@@ -23,11 +23,21 @@
                 <TextBlock Text="PicScreenSaver" FontSize="12.5" FontWeight="Medium"
                            Foreground="#555A70" FontFamily="Noto Sans SC"
                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                <Button x:Name="CloseBtn" Content="&#x2715;" Width="36" Height="44"
-                        Background="Transparent" Foreground="#555A70" BorderThickness="0"
-                        FontSize="11" Cursor="Hand"
+                <Button x:Name="CloseBtn" Width="36" Height="44"
+                        Background="Transparent" BorderThickness="0" Cursor="Hand"
                         HorizontalAlignment="Right"
-                        Click="CloseBtn_Click"/>
+                        Click="CloseBtn_Click">
+                    <Viewbox Width="10" Height="10" Stretch="Uniform">
+                        <Grid>
+                            <Line X1="0" Y1="0" X2="10" Y2="10"
+                                  Stroke="#555A70" StrokeThickness="1.5"
+                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                            <Line X1="10" Y1="0" X2="0" Y2="10"
+                                  Stroke="#555A70" StrokeThickness="1.5"
+                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                        </Grid>
+                    </Viewbox>
+                </Button>
             </Grid>
         </Border>
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -27,11 +28,13 @@ namespace PicScreenSaver.Runtime.Engine
 
         private EngineState _state = EngineState.Idle;
         private bool _inTransition = false;
-        private int _posInOrder;        // index into _playOrder
+        private int _posInOrder;
         private int _imageCount;
-        private int[] _playOrder;       // shuffled or sequential playback sequence
+        private int[] _playOrder;
         private byte[][] _imageCache;
-        private bool _isPreloading;
+
+        // 修复 #2：用 Task 替代 BeginInvoke，预加载在真正的后台线程执行
+        private Task _preloadTask = Task.CompletedTask;
 
         private static readonly Random _rng = new Random();
 
@@ -46,14 +49,10 @@ namespace PicScreenSaver.Runtime.Engine
             _imageCount = config.ImageCount;
 
             _imageCache = new byte[_imageCount][];
-            for (int i = 0; i < _imageCount; i++)
-                _imageCache[i] = null;
 
-            // 构建播放顺序
             _playOrder = Enumerable.Range(0, _imageCount).ToArray();
             if (config.ShuffleImages)
             {
-                // Fisher-Yates shuffle
                 for (int i = _playOrder.Length - 1; i > 0; i--)
                 {
                     int j = _rng.Next(i + 1);
@@ -79,6 +78,10 @@ namespace PicScreenSaver.Runtime.Engine
             _outgoingImage.Opacity = 1.0;
             _incomingImage.Opacity = 0.0;
 
+            // 静止显示时用高质量缩放
+            SetScalingMode(_outgoingImage, BitmapScalingMode.HighQuality);
+            SetScalingMode(_incomingImage, BitmapScalingMode.HighQuality);
+
             _state = EngineState.Displaying;
             _displayTimer.Interval = TimeSpan.FromSeconds(_config.DisplayDuration);
             _displayTimer.Start();
@@ -97,10 +100,8 @@ namespace PicScreenSaver.Runtime.Engine
         private void DisplayTimer_Tick(object sender, EventArgs e)
         {
             _displayTimer.Stop();
-
             if (_state != EngineState.Displaying) return;
             if (_imageCount <= 1) return;
-
             PerformTransition();
         }
 
@@ -111,6 +112,10 @@ namespace PicScreenSaver.Runtime.Engine
 
             int nextImageIndex = _playOrder[(_posInOrder + 1) % _imageCount];
             LoadAndDisplayImage(_incomingImage, nextImageIndex);
+
+            // 修复 #2：动画过程中降低缩放质量，减少 GPU/CPU 负担
+            SetScalingMode(_outgoingImage, BitmapScalingMode.LowQuality);
+            SetScalingMode(_incomingImage, BitmapScalingMode.LowQuality);
 
             var transition = _transitionManager.Next();
             var storyboard = transition.Build(_outgoingImage, _incomingImage, _config.TransitionDuration);
@@ -124,6 +129,10 @@ namespace PicScreenSaver.Runtime.Engine
                 ResetTransforms(_outgoingImage);
                 ResetTransforms(_incomingImage);
                 CleanupEffects();
+
+                // 动画结束，恢复高质量缩放
+                SetScalingMode(_outgoingImage, BitmapScalingMode.HighQuality);
+                SetScalingMode(_incomingImage, BitmapScalingMode.HighQuality);
 
                 _posInOrder = (_posInOrder + 1) % _imageCount;
                 int nextPos = (_posInOrder + 1) % _imageCount;
@@ -148,7 +157,6 @@ namespace PicScreenSaver.Runtime.Engine
 
         static SlideEngine()
         {
-            // 1x1 黑色占位图，用于图片加载失败时的后备
             _blackPlaceholder = new WriteableBitmap(1, 1, 96, 96, PixelFormats.Bgra32, null);
             _blackPlaceholder.Freeze();
         }
@@ -161,6 +169,10 @@ namespace PicScreenSaver.Runtime.Engine
                 image.Source = _blackPlaceholder;
                 return;
             }
+
+            // 缓存原始字节，避免重复读 PE 资源
+            if (_imageCache[index] == null)
+                _imageCache[index] = bytes;
 
             var bitmap = new BitmapImage();
             using (var ms = new System.IO.MemoryStream(bytes))
@@ -176,25 +188,24 @@ namespace PicScreenSaver.Runtime.Engine
 
         private void PreloadNext(int imageIndex)
         {
-            if (_isPreloading) return;
+            // 修复 #3：已缓存则跳过，未缓存才预加载
+            if (_imageCache[imageIndex] != null) return;
             if (_imageCount <= 1) return;
 
-            _isPreloading = true;
-            int preloadIndex = imageIndex;
+            // 修复 #3：在真正的后台线程读取，完成后切回主线程写缓存
+            // 用 Task 而非 BeginInvoke，不占用 UI 线程
+            if (!_preloadTask.IsCompleted) return; // 上一个预加载未完成则跳过，不排队
 
-            Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() =>
+            int capturedIndex = imageIndex;
+            _preloadTask = Task.Run(() =>
             {
-                try
-                {
-                    var bytes = ResourceLoader.GetImageBytes(preloadIndex);
-                    if (bytes != null)
-                        _imageCache[preloadIndex] = bytes;
-                }
-                finally
-                {
-                    _isPreloading = false;
-                }
-            }));
+                return ResourceLoader.GetImageBytes(capturedIndex);
+            }).ContinueWith(t =>
+            {
+                if (t.Result != null)
+                    _imageCache[capturedIndex] = t.Result;
+            }, TaskScheduler.FromCurrentSynchronizationContext());
+            // ContinueWith 回主线程只写一个引用赋值，几乎不耗时
         }
 
         private void ResetTransforms(FrameworkElement element)
@@ -205,23 +216,27 @@ namespace PicScreenSaver.Runtime.Engine
             Panel.SetZIndex(element, 0);
         }
 
-        /// <summary>
-        /// 清理过渡特效可能遗留的动态元素（如 FadeWhite 的白色遮罩 Rectangle）
-        /// </summary>
         private void CleanupEffects()
         {
             var parent = _outgoingImage.Parent as Panel;
             if (parent == null) return;
 
-            // 移除动态添加的 Rectangle 叠加层（FadeWhite 等留下的）
             var toRemove = new List<UIElement>();
             foreach (var child in parent.Children)
             {
-                if (child is System.Windows.Shapes.Rectangle && child != _outgoingImage && child != _incomingImage)
+                if (child is System.Windows.Shapes.Rectangle
+                    && child != _outgoingImage
+                    && child != _incomingImage)
                     toRemove.Add((UIElement)child);
             }
             foreach (var item in toRemove)
                 parent.Children.Remove(item);
+        }
+
+        // 修复 #2：统一设置缩放模式的辅助方法
+        private static void SetScalingMode(Image image, BitmapScalingMode mode)
+        {
+            RenderOptions.SetBitmapScalingMode(image, mode);
         }
     }
 }

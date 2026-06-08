@@ -261,21 +261,41 @@
                             Click="ThemeToggleBtn_Click"
                             MouseEnter="WindowBtn_MouseEnter" MouseLeave="WindowBtn_MouseLeave"
                             ToolTip="&#x5207;&#x6362;&#x4E3B;&#x9898;"/>
-                    <Button x:Name="MinimizeBtn" Content="&#xE921;" Width="36" Height="44"
-                            Background="Transparent" Foreground="{DynamicResource Text2Brush}" BorderThickness="0"
-                            FontFamily="Segoe MDL2 Assets" FontSize="10" Cursor="Hand"
+                    <Button x:Name="MinimizeBtn" Width="36" Height="44"
+                            Background="Transparent" BorderThickness="0" Cursor="Hand"
                             Click="MinimizeBtn_Click"
-                            MouseEnter="WindowBtn_MouseEnter" MouseLeave="WindowBtn_MouseLeave"/>
-                    <Button x:Name="MaximizeBtn" Content="&#xE922;" Width="36" Height="44"
-                            Background="Transparent" Foreground="{DynamicResource Text2Brush}" BorderThickness="0"
-                            FontFamily="Segoe MDL2 Assets" FontSize="10" Cursor="Hand"
+                            MouseEnter="WindowBtn_MouseEnter" MouseLeave="WindowBtn_MouseLeave">
+                        <Viewbox Width="10" Height="10" Stretch="Uniform">
+                            <Rectangle Width="10" Height="1.5"
+                                       Fill="{DynamicResource Text2Brush}"
+                                       VerticalAlignment="Center"/>
+                        </Viewbox>
+                    </Button>
+                    <Button x:Name="MaximizeBtn" Width="36" Height="44"
+                            Background="Transparent" BorderThickness="0" Cursor="Hand"
                             Click="MaximizeBtn_Click"
-                            MouseEnter="WindowBtn_MouseEnter" MouseLeave="WindowBtn_MouseLeave"/>
-                    <Button x:Name="CloseBtn" Content="&#xE8BB;" Width="36" Height="44"
-                            Background="Transparent" Foreground="{DynamicResource Text2Brush}" BorderThickness="0"
-                            FontFamily="Segoe MDL2 Assets" FontSize="10" Cursor="Hand"
+                            MouseEnter="WindowBtn_MouseEnter" MouseLeave="WindowBtn_MouseLeave">
+                        <Viewbox Width="10" Height="10" Stretch="Uniform">
+                            <Rectangle Width="10" Height="10"
+                                       Stroke="{DynamicResource Text2Brush}" StrokeThickness="1.5"
+                                       Fill="Transparent"/>
+                        </Viewbox>
+                    </Button>
+                    <Button x:Name="CloseBtn" Width="36" Height="44"
+                            Background="Transparent" BorderThickness="0" Cursor="Hand"
                             Click="CloseBtn_Click"
-                            MouseEnter="CloseBtn_MouseEnter" MouseLeave="CloseBtn_MouseLeave"/>
+                            MouseEnter="CloseBtn_MouseEnter" MouseLeave="CloseBtn_MouseLeave">
+                        <Viewbox Width="10" Height="10" Stretch="Uniform">
+                            <Grid>
+                                <Line X1="0" Y1="0" X2="10" Y2="10"
+                                      Stroke="{DynamicResource Text2Brush}" StrokeThickness="1.5"
+                                      StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                                <Line X1="10" Y1="0" X2="0" Y2="10"
+                                      Stroke="{DynamicResource Text2Brush}" StrokeThickness="1.5"
+                                      StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                            </Grid>
+                        </Viewbox>
+                    </Button>
                 </StackPanel>
             </Grid>
         </Border>
@@ -655,7 +675,7 @@
                                         <TextBlock Grid.Column="1" x:Name="QualityValue" Text="75%" FontSize="14" FontWeight="SemiBold"
                                                    Foreground="{DynamicResource AccentBrush}" FontFamily="Consolas" VerticalAlignment="Center"/>
                                     </Grid>
-                                    <Slider x:Name="QualitySlider" Minimum="40" Maximum="90" Value="75" SmallChange="5" LargeChange="10"
+                                    <Slider x:Name="QualitySlider" Minimum="50" Maximum="90" Value="75" SmallChange="5" LargeChange="10"
                                             Margin="0,8,0,4" IsSnapToTickEnabled="True" TickFrequency="5"
                                             ValueChanged="QualitySlider_ValueChanged"/>
                                     <Grid>
@@ -664,10 +684,41 @@
                                             <ColumnDefinition Width="Auto"/>
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0" Text="40% &#x6781;&#x5C0F;" FontSize="10" Foreground="{DynamicResource Text3Brush}" FontFamily="Consolas"/>
+                                        <TextBlock Grid.Column="0" Text="50% &#x6781;&#x5C0F;" FontSize="10" Foreground="{DynamicResource Text3Brush}" FontFamily="Consolas"/>
                                         <TextBlock Grid.Column="1" Text="&#x63A8;&#x8350;" FontSize="10" Foreground="{DynamicResource Text3Brush}" FontFamily="Consolas"/>
                                         <TextBlock Grid.Column="2" Text="&#x9AD8;&#x8D28; 90%" FontSize="10" Foreground="{DynamicResource Text3Brush}" FontFamily="Consolas" HorizontalAlignment="Right"/>
                                     </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- 输出分辨率 -->
+                            <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="16,14">
+                                <StackPanel>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="输出分辨率" FontSize="11" FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC"/>
+                                            <TextBlock Text="限制打包图片的最大宽度" FontSize="10.5"
+                                                       Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC" Margin="0,1,0,0"/>
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="1" x:Name="MaxWidthValue" Text="1920" FontSize="14" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource AccentBrush}" FontFamily="Consolas" VerticalAlignment="Center"/>
+                                    </Grid>
+                                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                        <RadioButton x:Name="ResOriginal" Content="原图" GroupName="Resolution"
+                                                     Style="{StaticResource ToggleRadioStyle}" Margin="0,0,12,0"
+                                                     Click="ResolutionRadio_Click" Tag="0"/>
+                                        <RadioButton x:Name="Res2K" Content="2K" GroupName="Resolution"
+                                                     Style="{StaticResource ToggleRadioStyle}" Margin="0,0,12,0"
+                                                     Click="ResolutionRadio_Click" Tag="2560"/>
+                                        <RadioButton x:Name="Res1080" Content="1080P" IsChecked="True" GroupName="Resolution"
+                                                     Style="{StaticResource ToggleRadioStyle}" Margin="0,0,12,0"
+                                                     Click="ResolutionRadio_Click" Tag="1920"/>
+                                    </StackPanel>
                                 </StackPanel>
                             </Border>
 
