@@ -49,7 +49,7 @@ namespace PicScreenSaver.Runtime
             "缩小同时淡出",
             "新图从 1.2x 缩小到 1.0x 切入",
             "旧图从 1.0x 放大到 1.2x 淡出",
-            "旧图放大淡出的同时新图缩小淡入——电影感切换",
+            "旧图放大淡出的同时新图缩小淡入",
             "遮罩从左向右展开，逐渐露出新图",
             "遮罩从右向左展开，逐渐露出新图",
             "遮罩从上向下展开，逐渐露出新图",
@@ -135,10 +135,16 @@ namespace PicScreenSaver.Runtime
 
             Closing += (s, e) =>
             {
-                try { System.Environment.Exit(0); } catch { }
+                _previewStoryboard?.Stop();
+                _previewStoryboard = null;
             };
 
             if (config == null) return;
+
+            // 标题跟随生成时的屏保名称
+            string appTitle = !string.IsNullOrEmpty(config.Title) ? config.Title : "PicScreenSaver";
+            Title = appTitle;
+            TitleText.Text = appTitle;
 
             // 更新信息
             var meta = new System.Text.StringBuilder();
@@ -350,6 +356,33 @@ namespace PicScreenSaver.Runtime
                 TransitionDurationLabel.Text = e.NewValue.ToString("F1");
         }
 
+        private void RootBorder_Loaded(object sender, RoutedEventArgs e)
+        {
+            UpdateBorderClip();
+            RootBorder.SizeChanged += (s, ev) => UpdateBorderClip();
+            EffectPreviewBorder.Loaded += EffectPreviewBorder_LayoutUpdated;
+            EffectPreviewBorder.SizeChanged += (s, ev) => UpdatePreviewClip();
+        }
+
+        private void UpdateBorderClip()
+        {
+            if (RootBorder.ActualWidth > 0 && RootBorder.ActualHeight > 0)
+                RootBorder.Clip = new RectangleGeometry(
+                    new Rect(0, 0, RootBorder.ActualWidth, RootBorder.ActualHeight), 10, 10);
+        }
+
+        private void EffectPreviewBorder_LayoutUpdated(object sender, RoutedEventArgs e)
+        {
+            UpdatePreviewClip();
+        }
+
+        private void UpdatePreviewClip()
+        {
+            if (EffectPreviewBorder.ActualWidth > 0 && EffectPreviewBorder.ActualHeight > 0)
+                EffectPreviewBorder.Clip = new RectangleGeometry(
+                    new Rect(0, 0, EffectPreviewBorder.ActualWidth, EffectPreviewBorder.ActualHeight), 6, 6);
+        }
+
         private void TitleBar_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             if (e.ClickCount == 2)
@@ -363,6 +396,16 @@ namespace PicScreenSaver.Runtime
         private void CloseBtn_Click(object sender, RoutedEventArgs e)
         {
             Close();
+        }
+
+        private void CloseBtn_MouseEnter(object sender, MouseEventArgs e)
+        {
+            CloseBtn.Background = new SolidColorBrush(Color.FromArgb(30, 0, 0, 0));
+        }
+
+        private void CloseBtn_MouseLeave(object sender, MouseEventArgs e)
+        {
+            CloseBtn.Background = Brushes.Transparent;
         }
 
         private void InstallButton_Click(object sender, RoutedEventArgs e)

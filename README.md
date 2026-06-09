@@ -1,4 +1,4 @@
-# PicScreenSaver v1.2.0
+# PicScreenSaver v1.3.0
 
 个性化 Windows 屏保制作工具。选择图片、配置过渡效果、一键生成 `.scr` 屏保文件。
 

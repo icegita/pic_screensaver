@@ -5,11 +5,38 @@
         Width="640" Height="600"
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
-        Background="#F0F1F5"
+        Background="Transparent"
         WindowStyle="None"
         AllowsTransparency="True"
         Topmost="True">
-    <Grid>
+    <Window.Resources>
+        <Style x:Key="RoundedBtn" TargetType="Button">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" CornerRadius="6"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                              Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Opacity" Value="0.85"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    <Border x:Name="ShadowHost" CornerRadius="10" Margin="16">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="20" ShadowDepth="2" Color="#000000" Opacity="0.4"/>
+        </Border.Effect>
+        <Border x:Name="RootBorder" Background="#F0F1F5" CornerRadius="10" ClipToBounds="True" Loaded="RootBorder_Loaded">
+        <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="44"/>
             <RowDefinition Height="*"/>
@@ -20,13 +47,15 @@
         <Border Grid.Row="0" Background="#FFFFFF" BorderBrush="#CDD0DA" BorderThickness="0,0,0,1"
                 MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
             <Grid>
-                <TextBlock Text="PicScreenSaver" FontSize="12.5" FontWeight="Medium"
+                <TextBlock x:Name="TitleText" Text="PicScreenSaver" FontSize="12.5" FontWeight="Medium"
                            Foreground="#555A70" FontFamily="Noto Sans SC"
                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
                 <Button x:Name="CloseBtn" Width="36" Height="44"
                         Background="Transparent" BorderThickness="0" Cursor="Hand"
                         HorizontalAlignment="Right"
-                        Click="CloseBtn_Click">
+                        Click="CloseBtn_Click"
+                        MouseEnter="CloseBtn_MouseEnter"
+                        MouseLeave="CloseBtn_MouseLeave">
                     <Viewbox Width="10" Height="10" Stretch="Uniform">
                         <Grid>
                             <Line X1="0" Y1="0" X2="10" Y2="10"
@@ -141,7 +170,7 @@
 
                     <Border Grid.Row="4" BorderBrush="#CDD0DA" BorderThickness="0,1,0,0" Background="Transparent"
                             VerticalAlignment="Stretch">
-                        <Border CornerRadius="6" ClipToBounds="True" Background="#E8E9EF"
+                        <Border x:Name="EffectPreviewBorder" CornerRadius="6" Background="#E8E9EF"
                                 Width="220" Height="160" VerticalAlignment="Center" HorizontalAlignment="Center">
                             <Grid>
                                 <Image x:Name="EffectPreviewImageA" Stretch="UniformToFill" Opacity="1"
@@ -210,16 +239,20 @@
                 <TextBlock Grid.Column="0" x:Name="InfoText" Text="" FontSize="11" Foreground="#8A90A6"
                            FontFamily="Noto Sans SC" VerticalAlignment="Center"/>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button x:Name="InstallBtn" Content="&#x5B89;&#x88C5;&#x5230;&#x7CFB;&#x7EDF;" Width="110" Height="28"
+                    <Button x:Name="InstallBtn" Content="&#x5B89;&#x88C5;&#x5230;&#x7CFB;&#x7EDF;"
                             Click="InstallButton_Click" Background="#2AAF6A" Foreground="White"
                             BorderThickness="0" FontFamily="Noto Sans SC" FontSize="11" FontWeight="SemiBold"
-                            Cursor="Hand" Visibility="Collapsed"/>
-                    <Button Content="&#x786E;&#x5B9A;" Width="72" Height="28"
+                            Padding="14,0" Height="28" Cursor="Hand" Visibility="Collapsed"
+                            Style="{StaticResource RoundedBtn}"/>
+                    <Button Content="&#x786E;&#x5B9A;"
                             Click="OkButton_Click" Background="#5570E8" Foreground="White"
                             BorderThickness="0" FontFamily="Noto Sans SC" FontSize="11" FontWeight="SemiBold"
-                            Cursor="Hand"/>
+                            Padding="14,0" Height="28" Cursor="Hand" Margin="6,0,0,0"
+                            Style="{StaticResource RoundedBtn}"/>
                 </StackPanel>
             </Grid>
         </Border>
     </Grid>
+        </Border>
+    </Border>
 </Window>

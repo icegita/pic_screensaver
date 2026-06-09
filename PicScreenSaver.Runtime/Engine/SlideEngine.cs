@@ -210,10 +210,21 @@ namespace PicScreenSaver.Runtime.Engine
 
         private void ResetTransforms(FrameworkElement element)
         {
+            // 修复 Win7 黑屏：先移除动画钟（HoldEnd 持有值优先级高于本地值）
+            element.BeginAnimation(FrameworkElement.RenderTransformProperty, null);
+            element.BeginAnimation(FrameworkElement.RenderTransformOriginProperty, null);
+            element.BeginAnimation(UIElement.ClipProperty, null);
+            element.BeginAnimation(UIElement.EffectProperty, null);
+            element.BeginAnimation(UIElement.OpacityProperty, null);
+
             element.RenderTransform = null;
+            element.RenderTransformOrigin = new Point(0, 0);
             element.Clip = null;
             element.Effect = null;
             Panel.SetZIndex(element, 0);
+
+            // Win7 DirectX9 下强制刷新画布
+            element.InvalidateVisual();
         }
 
         private void CleanupEffects()

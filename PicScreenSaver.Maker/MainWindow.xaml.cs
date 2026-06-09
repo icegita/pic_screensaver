@@ -24,7 +24,7 @@ namespace PicScreenSaver.Maker
         private int _selectedIndex = -1;
         private double _displayDuration = 10.0;
         private double _transitionDuration = 1.2;
-        private int _quality = 75;
+        private int _quality = 70;
         private int _maxWidth = 1920;
         private string _outputPath = "";
         private System.Threading.CancellationTokenSource _encodeCts;
@@ -68,7 +68,7 @@ namespace PicScreenSaver.Maker
             "缩小同时淡出",
             "新图从 1.2x 缩小到 1.0x 切入",
             "旧图从 1.0x 放大到 1.2x 淡出",
-            "旧图放大淡出的同时新图缩小淡入——电影感切换",
+            "旧图放大淡出的同时新图缩小淡入",
             "遮罩从左向右展开，逐渐露出新图",
             "遮罩从右向左展开，逐渐露出新图",
             "遮罩从上向下展开，逐渐露出新图",
@@ -118,8 +118,7 @@ namespace PicScreenSaver.Maker
 
         private void UpdateTitle()
         {
-            string name = SaverNameInput.Text?.Trim();
-            TitleText.Text = string.IsNullOrEmpty(name) ? "PicScreenSaver" : name;
+            TitleText.Text = "PicScreenSaver";
         }
 
         private DispatcherTimer _toastTimer;
@@ -818,6 +817,16 @@ namespace PicScreenSaver.Maker
             if (_isDragging) return;
             var card = (Border)sender;
             var index = (int)card.Tag;
+
+            // 双击打开大图预览
+            if (e.ClickCount == 2)
+            {
+                var dialog = new ImagePreviewDialog(_images, index);
+                dialog.Owner = this;
+                dialog.ShowDialog();
+                return;
+            }
+
             int prevIndex = _selectedIndex;
             _selectedIndex = index;
             if (prevIndex >= 0 && prevIndex < ImageGrid.Children.Count && ImageGrid.Children[prevIndex] is Border prevCard)
@@ -1207,9 +1216,14 @@ namespace PicScreenSaver.Maker
 
         private void QualitySlider_ValueChanged(object s, RoutedPropertyChangedEventArgs<double> e)
         {
-            _quality = (int)e.NewValue;
-            if (QualityValue != null) QualityValue.Text = $"{_quality}%";
-            if (StatusQuality != null) StatusQuality.Text = $"压缩质量 {_quality}%";
+            int raw = (int)Math.Round(e.NewValue, MidpointRounding.AwayFromZero);
+            int display = raw;
+            // WIC JPEG 编码器在部分系统上 QualityLevel=75 映射到与 90 相同的量化表，
+            // 导致压缩结果一致。此处将 75 偏移为 76 绕过此问题，显示仍保持 75
+            if (raw == 75) { raw = 76; display = 75; }
+            _quality = raw;
+            if (QualityValue != null) QualityValue.Text = $"{display}%";
+            if (StatusQuality != null) StatusQuality.Text = $"压缩质量 {display}%";
 
             if (_images.Count > 0)
             {

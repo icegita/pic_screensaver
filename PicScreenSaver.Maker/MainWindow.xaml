@@ -427,11 +427,6 @@
                         </Border>
                         <Border Grid.Row="5" Padding="16,8">
                             <StackPanel>
-                                <TextBlock Text="&#x64AD;&#x653E;&#x987A;&#x5E8F;" FontSize="10.5" Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC" Margin="0,0,0,8"/>
-                                <StackPanel Orientation="Horizontal">
-                                    <RadioButton x:Name="OrderSequential" Content="&#x987A;&#x5E8F;" GroupName="PlayOrder" Margin="0,0,12,0" Style="{StaticResource ToggleRadioStyle}"/>
-                                    <RadioButton x:Name="OrderRandom" Content="&#x968F;&#x673A;" IsChecked="True" GroupName="PlayOrder" Style="{StaticResource ToggleRadioStyle}"/>
-                                </StackPanel>
                             </StackPanel>
                         </Border>
                     </Grid>
@@ -658,6 +653,20 @@
                                 </Grid>
                             </Border>
 
+                            <!-- 播放顺序 -->
+                            <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="16,14">
+                                <StackPanel>
+                                    <TextBlock Text="&#x64AD;&#x653E;&#x987A;&#x5E8F;" FontSize="11" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC"/>
+                                    <TextBlock Text="&#x56FE;&#x7247;&#x5207;&#x6362;&#x7684;&#x64AD;&#x653E;&#x987A;&#x5E8F;" FontSize="10.5"
+                                               Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC" Margin="0,1,0,8"/>
+                                    <StackPanel Orientation="Horizontal">
+                                        <RadioButton x:Name="OrderSequential" Content="&#x987A;&#x5E8F;" GroupName="PlayOrder" Margin="0,0,12,0" Style="{StaticResource ToggleRadioStyle}"/>
+                                        <RadioButton x:Name="OrderRandom" Content="&#x968F;&#x673A;" IsChecked="True" GroupName="PlayOrder" Style="{StaticResource ToggleRadioStyle}"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+
                             <!-- 压缩质量 -->
                             <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="16,14">
                                 <StackPanel>
@@ -672,10 +681,10 @@
                                             <TextBlock Text="&#x6570;&#x503C;&#x8D8A;&#x4F4E;&#x4F53;&#x79EF;&#x8D8A;&#x5C0F;" FontSize="10.5"
                                                        Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC" Margin="0,1,0,0"/>
                                         </StackPanel>
-                                        <TextBlock Grid.Column="1" x:Name="QualityValue" Text="75%" FontSize="14" FontWeight="SemiBold"
+                                        <TextBlock Grid.Column="1" x:Name="QualityValue" Text="70%" FontSize="14" FontWeight="SemiBold"
                                                    Foreground="{DynamicResource AccentBrush}" FontFamily="Consolas" VerticalAlignment="Center"/>
                                     </Grid>
-                                    <Slider x:Name="QualitySlider" Minimum="50" Maximum="90" Value="75" SmallChange="5" LargeChange="10"
+                                    <Slider x:Name="QualitySlider" Minimum="50" Maximum="90" Value="70" SmallChange="5" LargeChange="10"
                                             Margin="0,8,0,4" IsSnapToTickEnabled="True" TickFrequency="5"
                                             ValueChanged="QualitySlider_ValueChanged"/>
                                     <Grid>
@@ -755,7 +764,7 @@
                     <TextBlock x:Name="StatusImageCount" Text="0 &#x5F20;&#x56FE;&#x7247;" FontSize="11" Foreground="{DynamicResource Text3Brush}" FontFamily="Consolas"/>
                 </StackPanel>
                 <TextBlock x:Name="StatusEstimate" Text="&#x9884;&#x8BA1;&#x4F53;&#x79EF; ~0 MB" FontSize="11" Foreground="{DynamicResource Text3Brush}" FontFamily="Consolas" Margin="16,0,0,0"/>
-                <TextBlock x:Name="StatusQuality" Text="&#x538B;&#x7F29;&#x8D28;&#x91CF; 75%" FontSize="11" Foreground="{DynamicResource Text3Brush}" FontFamily="Consolas" Margin="16,0,0,0"/>
+                <TextBlock x:Name="StatusQuality" Text="&#x538B;&#x7F29;&#x8D28;&#x91CF; 70%" FontSize="11" Foreground="{DynamicResource Text3Brush}" FontFamily="Consolas" Margin="16,0,0,0"/>
             </StackPanel>
         </Border>
     </Grid>

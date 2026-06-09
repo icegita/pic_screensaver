@@ -1,0 +1,101 @@
+<Window x:Class="PicScreenSaver.Maker.ImagePreviewDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="PicScreenSaver"
+        Width="800" Height="600"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        Background="Transparent"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Topmost="False"
+        KeyDown="Window_KeyDown">
+    <Border x:Name="ShadowHost" CornerRadius="10" Margin="16">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="20" ShadowDepth="2" Color="#000000" Opacity="0.4"/>
+        </Border.Effect>
+        <Border x:Name="ClipBorder" CornerRadius="10" ClipToBounds="True" Loaded="ClipBorder_Loaded">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="44"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- 标题栏 -->
+            <Border x:Name="TitleBar" Grid.Row="0"
+                    BorderBrush="#CDD0DA" BorderThickness="0,0,0,1"
+                    MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+                <Grid>
+                    <TextBlock x:Name="TitleText" FontSize="12.5" FontWeight="Medium"
+                               FontFamily="Noto Sans SC"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <Button x:Name="CloseBtn" Width="36" Height="44"
+                            Background="Transparent" BorderThickness="0" Cursor="Hand"
+                            HorizontalAlignment="Right"
+                            Click="CloseBtn_Click"
+                            MouseEnter="CloseBtn_MouseEnter"
+                            MouseLeave="CloseBtn_MouseLeave">
+                        <Viewbox Width="10" Height="10" Stretch="Uniform">
+                            <Grid>
+                                <Line x:Name="CloseLine1" X1="0" Y1="0" X2="10" Y2="10"
+                                      Stroke="#555A70" StrokeThickness="1.5"
+                                      StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                                <Line x:Name="CloseLine2" X1="10" Y1="0" X2="0" Y2="10"
+                                      Stroke="#555A70" StrokeThickness="1.5"
+                                      StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                            </Grid>
+                        </Viewbox>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- 图片区域 -->
+            <Border Grid.Row="1">
+            <Grid>
+                <Border x:Name="ImageContainer"
+                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                        Margin="60,0,60,0">
+                    <Image x:Name="PreviewImage" Stretch="Uniform"
+                           RenderOptions.BitmapScalingMode="HighQuality"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+
+                <!-- 左翻页 -->
+                <Border x:Name="PrevBtn" Width="44" Height="44"
+                        Background="Transparent" Cursor="Hand"
+                        HorizontalAlignment="Left" VerticalAlignment="Center"
+                        Margin="8,0,0,0"
+                        MouseLeftButtonDown="PrevBtn_Click"
+                        MouseEnter="NavBtn_MouseEnter"
+                        MouseLeave="NavBtn_MouseLeave"
+                        Visibility="Collapsed">
+                    <Grid>
+                        <Ellipse x:Name="PrevBtnBg" Width="40" Height="40" Opacity="0.15"/>
+                        <TextBlock x:Name="PrevArrow" Text="❮" FontSize="20"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   Foreground="#555A70" FontFamily="Noto Sans SC"/>
+                    </Grid>
+                </Border>
+
+                <!-- 右翻页 -->
+                <Border x:Name="NextBtn" Width="44" Height="44"
+                        Background="Transparent" Cursor="Hand"
+                        HorizontalAlignment="Right" VerticalAlignment="Center"
+                        Margin="0,0,8,0"
+                        MouseLeftButtonDown="NextBtn_Click"
+                        MouseEnter="NavBtn_MouseEnter"
+                        MouseLeave="NavBtn_MouseLeave"
+                        Visibility="Collapsed">
+                    <Grid>
+                        <Ellipse x:Name="NextBtnBg" Width="40" Height="40" Opacity="0.15"/>
+                        <TextBlock x:Name="NextArrow" Text="❯" FontSize="20"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   Foreground="#555A70" FontFamily="Noto Sans SC"/>
+                    </Grid>
+                </Border>
+            </Grid>
+            </Border>
+        </Grid>
+        </Border>
+    </Border>
+</Window>
