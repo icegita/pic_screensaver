@@ -10,8 +10,8 @@
     <Deterministic>true</Deterministic>
     <StartupObject>PicScreenSaver.Runtime.Program</StartupObject>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Version>1.3.3.0</Version>
-    <FileVersion>1.3.3.0</FileVersion>
+    <Version>1.3.4.0</Version>
+    <FileVersion>1.3.4.0</FileVersion>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <Company>iCeGiTa</Company>
     <Copyright>Copyright © 2026 iCeGiTa. All rights reserved.</Copyright>

@@ -20,6 +20,7 @@ Thumbs.db
 # Generated screensaver files
 *.scr
 
-# Design doc backup
+# Design docs
+docs/
 .docs/
 PROGRESS_REPORT.md
