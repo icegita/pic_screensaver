@@ -153,16 +153,16 @@ namespace PicScreenSaver.Runtime
             var meta = new System.Text.StringBuilder();
             if (!string.IsNullOrEmpty(config.Title))
                 meta.Append(config.Title);
-            if (!string.IsNullOrEmpty(config.CreatedBy))
-            {
-                if (meta.Length > 0) meta.Append("  ·  ");
-                meta.Append(config.CreatedBy);
-            }
+            // 添加图片数量
             if (config.ImageCount > 0)
             {
                 if (meta.Length > 0) meta.Append("  ·  ");
                 meta.Append($"{config.ImageCount} 张图片");
             }
+            // 添加制作软件和版本
+            var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+            if (meta.Length > 0) meta.Append("  ·  ");
+            meta.Append($"PicScreenSaver v{version.Major}.{version.Minor}.{version.Build} by @iCeGiTa");
             InfoText.Text = meta.Length > 0 ? meta.ToString() : "就绪";
 
             DisplayDurationSlider.Value = config.DisplayDuration;

@@ -119,7 +119,8 @@ namespace PicScreenSaver.Maker
 
         private void UpdateTitle()
         {
-            TitleText.Text = "PicScreenSaver";
+            var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+            TitleText.Text = $"PicScreenSaver · v{version.Major}.{version.Minor}.{version.Build}";
         }
 
         private DispatcherTimer _toastTimer;
