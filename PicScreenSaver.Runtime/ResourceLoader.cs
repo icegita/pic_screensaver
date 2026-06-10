@@ -31,7 +31,10 @@ namespace PicScreenSaver.Runtime
 
         public static ScreensaverConfig LoadConfig()
         {
-            // 先读本地 AppData（设置页保存的），没有则用嵌入配置
+            // 先从PE资源读取嵌入配置（这是最新的）
+            var embeddedConfig = LoadConfigFromResources();
+            
+            // 再检查本地 AppData（设置页保存的）
             string configPath = GetConfigFilePath();
             if (File.Exists(configPath))
             {
@@ -39,12 +42,21 @@ namespace PicScreenSaver.Runtime
                 {
                     string fileJson = File.ReadAllText(configPath, Encoding.UTF8);
                     var fileConfig = DeserializeConfig(fileJson);
-                    if (fileConfig != null) return fileConfig;
+                    if (fileConfig != null)
+                    {
+                        // 如果本地配置的ImageCount与嵌入配置不同，使用嵌入配置
+                        // 这确保了图片数量始终正确
+                        if (embeddedConfig != null && fileConfig.ImageCount != embeddedConfig.ImageCount)
+                        {
+                            return embeddedConfig;
+                        }
+                        return fileConfig;
+                    }
                 }
                 catch { }
             }
 
-            return LoadConfigFromResources();
+            return embeddedConfig;
         }
 
         private static ScreensaverConfig LoadConfigFromResources()
@@ -96,7 +108,7 @@ namespace PicScreenSaver.Runtime
 
         private static string GetConfigFilePath()
         {
-            string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            string appData = Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData);
             string scrName = Path.GetFileNameWithoutExtension(
                 System.Reflection.Assembly.GetExecutingAssembly().Location);
             return Path.Combine(appData, "PicScreenSaver", scrName + "_config.json");

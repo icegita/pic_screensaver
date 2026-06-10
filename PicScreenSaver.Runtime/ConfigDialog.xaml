@@ -10,6 +10,82 @@
         AllowsTransparency="True"
         Topmost="True">
     <Window.Resources>
+        <Style x:Key="TitleBarButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}"
+                                BorderThickness="0" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True"/>
+                            <Trigger Property="IsPressed" Value="True"/>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="RoundedButtonSmall" TargetType="Button">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" CornerRadius="4"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                              Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Opacity" Value="0.85"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="EffectCheckBoxStyle" TargetType="CheckBox">
+            <Setter Property="Foreground" Value="#1A1D2A"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontFamily" Value="Noto Sans SC"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Margin" Value="0,0,0,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <Grid Background="Transparent">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border x:Name="checkBorder" Grid.Column="0" Width="16" Height="16" CornerRadius="4"
+                                    BorderBrush="#B0B4C2" BorderThickness="1.5" Margin="16,0,10,0"
+                                    VerticalAlignment="Center" Background="Transparent">
+                                <TextBlock x:Name="checkMark" Text="&#x2713;" FontSize="9" Foreground="White"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                                           Visibility="Collapsed"/>
+                            </Border>
+                            <ContentPresenter Grid.Column="1" VerticalAlignment="Center" Margin="0,3,16,3"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="checkBorder" Property="Background" Value="#5570E8"/>
+                                <Setter TargetName="checkBorder" Property="BorderBrush" Value="#5570E8"/>
+                                <Setter TargetName="checkMark" Property="Visibility" Value="Visible"/>
+                                <Setter Property="Foreground" Value="#5570E8"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="checkBorder" Property="BorderBrush" Value="#5570E8"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
         <Style x:Key="RoundedBtn" TargetType="Button">
             <Setter Property="Template">
                 <Setter.Value>
@@ -44,29 +120,37 @@
         </Grid.RowDefinitions>
 
         <!-- 标题栏 -->
-        <Border Grid.Row="0" Background="#FFFFFF" BorderBrush="#CDD0DA" BorderThickness="0,0,0,1"
+        <Border x:Name="TitleBarBg" Grid.Row="0" Background="#FFFFFF" BorderBrush="#CDD0DA" BorderThickness="0,0,0,1"
                 MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
             <Grid>
                 <TextBlock x:Name="TitleText" Text="PicScreenSaver" FontSize="12.5" FontWeight="Medium"
                            Foreground="#555A70" FontFamily="Noto Sans SC"
                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                <Button x:Name="CloseBtn" Width="36" Height="44"
-                        Background="Transparent" BorderThickness="0" Cursor="Hand"
-                        HorizontalAlignment="Right"
-                        Click="CloseBtn_Click"
-                        MouseEnter="CloseBtn_MouseEnter"
-                        MouseLeave="CloseBtn_MouseLeave">
-                    <Viewbox Width="10" Height="10" Stretch="Uniform">
-                        <Grid>
-                            <Line X1="0" Y1="0" X2="10" Y2="10"
-                                  Stroke="#555A70" StrokeThickness="1.5"
-                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
-                            <Line X1="10" Y1="0" X2="0" Y2="10"
-                                  Stroke="#555A70" StrokeThickness="1.5"
-                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
-                        </Grid>
-                    </Viewbox>
-                </Button>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <Button x:Name="ThemeToggleBtn" Width="36" Height="44"
+                            Style="{StaticResource TitleBarButtonStyle}"
+                            Background="Transparent" BorderThickness="0" Cursor="Hand"
+                            Click="ThemeToggleBtn_Click"
+                            MouseEnter="ThemeBtn_MouseEnter" MouseLeave="ThemeBtn_MouseLeave"
+                            ToolTip="&#x5207;&#x6362;&#x4E3B;&#x9898;"/>
+                    <Button x:Name="CloseBtn" Width="36" Height="44"
+                            Style="{StaticResource TitleBarButtonStyle}"
+                            Background="Transparent" BorderThickness="0" Cursor="Hand"
+                            Click="CloseBtn_Click"
+                            MouseEnter="CloseBtn_MouseEnter"
+                            MouseLeave="CloseBtn_MouseLeave">
+                        <Viewbox Width="10" Height="10" Stretch="Uniform">
+                            <Grid>
+                                <Line x:Name="CloseLine1" X1="0" Y1="0" X2="10" Y2="10"
+                                      Stroke="#555A70" StrokeThickness="1.5"
+                                      StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                                <Line x:Name="CloseLine2" X1="10" Y1="0" X2="0" Y2="10"
+                                      Stroke="#555A70" StrokeThickness="1.5"
+                                      StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                            </Grid>
+                        </Viewbox>
+                    </Button>
+                </StackPanel>
             </Grid>
         </Border>
 
@@ -79,7 +163,7 @@
             </Grid.ColumnDefinitions>
 
             <!-- 左栏 -->
-            <Border Grid.Column="0" Background="#FFFFFF" BorderBrush="#CDD0DA" BorderThickness="1" CornerRadius="10" ClipToBounds="True">
+            <Border x:Name="LeftCard" Grid.Column="0" Background="#FFFFFF" BorderBrush="#CDD0DA" BorderThickness="1" CornerRadius="10" ClipToBounds="True">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -168,7 +252,7 @@
                         </Grid>
                     </Border>
 
-                    <Border Grid.Row="4" BorderBrush="#CDD0DA" BorderThickness="0,1,0,0" Background="Transparent"
+                    <Border x:Name="EffectPreviewArea" Grid.Row="4" BorderBrush="#CDD0DA" BorderThickness="0,1,0,0" Background="Transparent"
                             VerticalAlignment="Stretch">
                         <Border x:Name="EffectPreviewBorder" CornerRadius="6" Background="#E8E9EF"
                                 Width="220" Height="160" VerticalAlignment="Center" HorizontalAlignment="Center">
@@ -181,7 +265,7 @@
                         </Border>
                     </Border>
 
-                    <Border Grid.Row="5" BorderBrush="#CDD0DA" BorderThickness="0,1,0,0" Padding="16,9" Background="#F5F6FA"
+                    <Border x:Name="EffectInfoBorder" Grid.Row="5" BorderBrush="#CDD0DA" BorderThickness="0,1,0,0" Padding="16,9" Background="#F5F6FA"
                             CornerRadius="0,0,10,10">
                         <DockPanel>
                             <StackPanel>
@@ -202,35 +286,41 @@
             </Border>
 
             <!-- 右栏 -->
-            <Border Grid.Column="2" Background="#FFFFFF" BorderBrush="#CDD0DA" BorderThickness="1" CornerRadius="10">
+            <Border x:Name="RightCard" Grid.Column="2" Background="#FFFFFF" BorderBrush="#CDD0DA" BorderThickness="1" CornerRadius="10" ClipToBounds="True">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-                    <Border Grid.Row="0" BorderBrush="#CDD0DA" BorderThickness="0,0,0,1" Padding="16,14">
-                        <DockPanel>
-                            <TextBlock Text="&#x8FC7;&#x6E21;&#x6548;&#x679C;" FontSize="11" FontWeight="SemiBold"
-                                       Foreground="#8A90A6" FontFamily="Noto Sans SC" VerticalAlignment="Center"/>
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                                <Button Content="&#x5168;&#x9009;" Click="SelectAll_Click"
-                                        Background="#E8E9EF" Foreground="#555A70" BorderBrush="#CDD0DA"
-                                        BorderThickness="1" Padding="7,2" FontSize="10.5" FontFamily="Noto Sans SC"
-                                        Cursor="Hand"/>
-                                <Button Content="&#x6E05;&#x7A7A;" Click="ClearAll_Click"
-                                        Background="#E8E9EF" Foreground="#555A70" BorderBrush="#CDD0DA"
-                                        BorderThickness="1" Padding="7,2" FontSize="10.5" FontFamily="Noto Sans SC"
-                                        Margin="6,0,0,0" Cursor="Hand"/>
+                    <Border Grid.Row="0" BorderBrush="#CDD0DA" BorderThickness="0,0,0,1" Padding="12,0" Height="46">
+                        <Grid VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="&#x5DF2;&#x9009;: " FontSize="11" FontWeight="SemiBold"
+                                           Foreground="#8A90A6" FontFamily="Noto Sans SC"/>
+                                <TextBlock x:Name="SelectedEffectCountLabel" Text="0" FontSize="11" FontWeight="SemiBold"
+                                           Foreground="#5570E8" FontFamily="Noto Sans SC"/>
                             </StackPanel>
-                        </DockPanel>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Button x:Name="SelectAllBtn" Content="&#x5168;&#x9009;" Click="SelectAll_Click"
+                                        Background="#E8E9EF" Foreground="#8A90A6" BorderBrush="#CDD0DA"
+                                        BorderThickness="1" Padding="7,2" FontSize="10.5" FontFamily="Noto Sans SC"
+                                        Cursor="Hand" Style="{StaticResource RoundedButtonSmall}"/>
+                                <Button x:Name="ClearAllBtn" Content="&#x6E05;&#x7A7A;" Click="ClearAll_Click"
+                                        Background="#E8E9EF" Foreground="#8A90A6" BorderBrush="#CDD0DA"
+                                        BorderThickness="1" Padding="7,2" FontSize="10.5" FontFamily="Noto Sans SC"
+                                        Margin="6,0,0,0" Cursor="Hand" Style="{StaticResource RoundedButtonSmall}"/>
+                            </StackPanel>
+                        </Grid>
                     </Border>
-                    <UniformGrid x:Name="EffectsList" Grid.Row="1" Columns="2" Margin="2,0"/>
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Background="Transparent" Padding="8,4">
+                        <UniformGrid x:Name="EffectsList" Columns="2" HorizontalAlignment="Center" MaxWidth="400"/>
+                    </ScrollViewer>
                 </Grid>
             </Border>
         </Grid>
 
         <!-- 底部栏 -->
-        <Border Grid.Row="2" Background="#FFFFFF" BorderBrush="#CDD0DA" BorderThickness="0,1,0,0" Padding="20,0">
+        <Border x:Name="BottomBarBg" Grid.Row="2" Background="#FFFFFF" BorderBrush="#CDD0DA" BorderThickness="0,1,0,0" Padding="20,0">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>

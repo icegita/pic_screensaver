@@ -62,6 +62,13 @@ namespace PicScreenSaver.Maker
 
             PrevArrow.Foreground = text2Brush;
             NextArrow.Foreground = text2Brush;
+
+            // 深色模式下阴影变浅
+            var shadowEffect = ShadowHost.Effect as System.Windows.Media.Effects.DropShadowEffect;
+            if (shadowEffect != null)
+            {
+                shadowEffect.Color = ThemeColors.IsDark ? System.Windows.Media.Colors.White : System.Windows.Media.Colors.Black;
+            }
         }
 
         private void UpdateTitle()
@@ -140,11 +147,15 @@ namespace PicScreenSaver.Maker
         private void CloseBtn_MouseEnter(object sender, MouseEventArgs e)
         {
             CloseBtn.Background = ThemeColors.Brush(ThemeColors.DangerBg);
+            CloseLine1.Stroke = ThemeColors.Brush(ThemeColors.Danger);
+            CloseLine2.Stroke = ThemeColors.Brush(ThemeColors.Danger);
         }
 
         private void CloseBtn_MouseLeave(object sender, MouseEventArgs e)
         {
             CloseBtn.Background = Brushes.Transparent;
+            CloseLine1.Stroke = ThemeColors.Brush(ThemeColors.Text2);
+            CloseLine2.Stroke = ThemeColors.Brush(ThemeColors.Text2);
         }
 
         private void NavBtn_MouseEnter(object sender, MouseEventArgs e)

@@ -128,6 +128,9 @@ namespace PicScreenSaver.Runtime
             }
             catch { }
 
+            // 初始化主题按钮图标
+            SetThemeIcon();
+
             string myPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
             string systemDir = System.Environment.GetFolderPath(System.Environment.SpecialFolder.System);
             bool alreadyInstalled = myPath.StartsWith(systemDir, StringComparison.OrdinalIgnoreCase);
@@ -185,12 +188,7 @@ namespace PicScreenSaver.Runtime
                     Content = effect,
                     Tag = effect,
                     IsChecked = _selectedEffects.Contains(effect),
-                    Margin = new Thickness(2, 1, 2, 1),
-                    Cursor = System.Windows.Input.Cursors.Hand,
-                    Foreground = new SolidColorBrush(ColorFromHex("#1A1D2A")),
-                    FontSize = 11,
-                    FontFamily = new FontFamily("Noto Sans SC"),
-                    Height = 22
+                    Style = (Style)FindResource("EffectCheckBoxStyle")
                 };
                 cb.Checked += EffectCheckBox_Changed;
                 cb.Unchecked += EffectCheckBox_Changed;
@@ -400,12 +398,162 @@ namespace PicScreenSaver.Runtime
 
         private void CloseBtn_MouseEnter(object sender, MouseEventArgs e)
         {
-            CloseBtn.Background = new SolidColorBrush(Color.FromArgb(30, 0, 0, 0));
+            CloseBtn.Background = ThemeColors.Brush(ThemeColors.DangerBg);
+            CloseLine1.Stroke = ThemeColors.Brush(ThemeColors.Danger);
+            CloseLine2.Stroke = ThemeColors.Brush(ThemeColors.Danger);
         }
 
         private void CloseBtn_MouseLeave(object sender, MouseEventArgs e)
         {
             CloseBtn.Background = Brushes.Transparent;
+            CloseLine1.Stroke = ThemeColors.Brush(ThemeColors.Text2);
+            CloseLine2.Stroke = ThemeColors.Brush(ThemeColors.Text2);
+        }
+
+        private void ThemeToggleBtn_Click(object sender, RoutedEventArgs e)
+        {
+            ThemeColors.SetDark(!ThemeColors.IsDark);
+            ApplyTheme();
+        }
+
+        private void ThemeBtn_MouseEnter(object sender, MouseEventArgs e)
+        {
+            ThemeToggleBtn.Background = new SolidColorBrush(Color.FromArgb(30, 0, 0, 0));
+        }
+
+        private void ThemeBtn_MouseLeave(object sender, MouseEventArgs e)
+        {
+            ThemeToggleBtn.Background = Brushes.Transparent;
+        }
+
+        private void SetThemeIcon()
+        {
+            var viewbox = new Viewbox { Width = 16, Height = 16, Stretch = Stretch.Uniform };
+            string pathData = ThemeColors.IsDark
+                ? "M164.571429 241.371429c-171.885714 171.885714-171.885714 449.828571 0 621.714285s449.828571 171.885714 621.714285 0c54.857143-54.857143 95.085714-124.342857 113.371429-193.828571l3.657143-14.628572c7.314286-25.6-10.971429-47.542857-32.914286-54.857142-14.628571-3.657143-25.6 0-36.571429 7.314285-124.342857 69.485714-285.257143 51.2-391.314285-54.857143-91.428571-91.428571-117.028571-219.428571-80.457143-332.8l3.657143-10.971428c3.657143-25.6-10.971429-51.2-32.914286-62.171429-10.971429-3.657143-21.942857-3.657143-32.914286 0-3.657143 0-3.657143 0-3.657143 3.657143-47.542857 21.942857-91.428571 51.2-131.657142 91.428572z"
+                : "M512 511.4m-212 0a212 212 0 1 0 424 0 212 212 0 1 0-424 0Z M511.7 130.2c12.9-0.2 24.2 11.3 24.5 24.3l0.4 79.6c0.2 12.9-11.3 24.2-24.3 24.5-12.9 0.2-24.2-11.3-24.5-24.3l-0.4-79.6c0.9-14.9 11.4-24.3 24.3-24.5z M901.5 510c-0.2 12.9-9.6 23.4-24.5 24.3l-79.6-0.4c-12.9-0.2-24.5-11.5-24.3-24.5 0.2-12.9 11.5-24.5 24.5-24.3l79.6 0.4c12.9 0.3 24.5 11.6 24.3 24.5z M250.9 510c-0.2 12.9-9.6 23.4-24.5 24.3l-79.6-0.4c-12.9-0.2-24.5-11.5-24.3-24.5 0.2-12.9 11.5-24.5 24.5-24.3l79.6 0.4c12.9 0.3 24.5 11.6 24.3 24.5z M512.3 893.8c-12.9 0.2-24.2-11.3-24.5-24.3l-0.4-79.6c-0.2-12.9 11.3-24.2 24.3-24.5 12.9-0.2 24.2 11.3 24.5 24.3l0.4 79.6c-0.9 14.9-11.4 24.3-24.3 24.5z M781.2 242.3c9.3 9 9.1 25.1 0.1 34.5l-56 56.5c-9 9.3-25.1 9.1-34.5 0.1-9.3-9-9.1-25.1-0.1-34.5l56-56.5c11.1-9.9 25.1-9.1 34.5-0.1z M788.2 786.5c-9.3 9-23.3 9.8-34.5-0.1l-56-56.5c-9-9.3-9.2-25.5 0.1-34.5 9.3-9 25.5-9.2 34.5 0.1l56 56.5c9 9.3 9.2 25.5-0.1 34.5z M328.1 326.4c-9.3 9-23.3 9.8-34.5-0.1l-56-56.5c-9-9.3-9.2-25.5 0.1-34.5 9.3-9 25.5-9.2 34.5 0.1l56 56.5c9 9.4 9.3 25.5-0.1 34.5z M241.6 782.6c-9.3-9-9.1-25.1-0.1-34.5l56-56.5c9-9.3 25.1-9.1 34.5-0.1 9.3 9 9.1 25.1 0.1 34.5l-56 56.5c-11.1 9.9-25.2 9.1-34.5 0.1z";
+            viewbox.Child = new System.Windows.Shapes.Path
+            {
+                Data = Geometry.Parse(pathData),
+                Fill = ThemeColors.Brush(ThemeColors.Text2),
+                Stretch = Stretch.Uniform
+            };
+            ThemeToggleBtn.Content = viewbox;
+        }
+
+        private void ApplyTheme()
+        {
+            // 更新主题图标
+            SetThemeIcon();
+
+            // 更新阴影颜色
+            var shadowEffect = ShadowHost.Effect as System.Windows.Media.Effects.DropShadowEffect;
+            if (shadowEffect != null)
+            {
+                shadowEffect.Color = ThemeColors.IsDark ? Colors.White : Colors.Black;
+            }
+
+            // 更新背景色
+            RootBorder.Background = ThemeColors.Brush(ThemeColors.Bg);
+
+            // 更新标题栏
+            TitleBarBg.Background = ThemeColors.Brush(ThemeColors.Surface);
+            TitleBarBg.BorderBrush = ThemeColors.Brush(ThemeColors.Border);
+            TitleText.Foreground = ThemeColors.Brush(ThemeColors.Text2);
+            CloseLine1.Stroke = ThemeColors.Brush(ThemeColors.Text2);
+            CloseLine2.Stroke = ThemeColors.Brush(ThemeColors.Text2);
+
+            // 更新左栏卡片
+            LeftCard.Background = ThemeColors.Brush(ThemeColors.Surface);
+            LeftCard.BorderBrush = ThemeColors.Brush(ThemeColors.Border);
+            UpdateChildBorders(LeftCard);
+            UpdateTextColors(LeftCard);
+
+            // 更新右栏卡片
+            RightCard.Background = ThemeColors.Brush(ThemeColors.Surface);
+            RightCard.BorderBrush = ThemeColors.Brush(ThemeColors.Border);
+            UpdateChildBorders(RightCard);
+            UpdateButtonColors(RightCard);
+
+            // 更新效果信息区域
+            EffectPreviewArea.Background = ThemeColors.Brush(ThemeColors.Surface);
+            EffectPreviewBorder.Background = ThemeColors.Brush(ThemeColors.Surface2);
+            EffectInfoBorder.Background = ThemeColors.Brush(ThemeColors.Surface);
+            SelectedEffectName.Foreground = ThemeColors.Brush(ThemeColors.Text);
+            SelectedEffectDesc.Foreground = ThemeColors.Brush(ThemeColors.Text2);
+            SelectedEffectCountLabel.Foreground = ThemeColors.Brush(ThemeColors.Accent);
+            EffectPreviewBorder.Background = ThemeColors.Brush(ThemeColors.Surface2);
+
+            // 更新底部栏
+            BottomBarBg.Background = ThemeColors.Brush(ThemeColors.Surface);
+            BottomBarBg.BorderBrush = ThemeColors.Brush(ThemeColors.Border);
+            InfoText.Foreground = ThemeColors.Brush(ThemeColors.Text3);
+        }
+
+        private void UpdateChildBorders(DependencyObject parent)
+        {
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+            {
+                var child = VisualTreeHelper.GetChild(parent, i);
+                if (child is System.Windows.Controls.Border border)
+                {
+                    border.BorderBrush = ThemeColors.Brush(ThemeColors.Border);
+                }
+                else
+                {
+                    UpdateChildBorders(child);
+                }
+            }
+        }
+
+        private void UpdateTextColors(DependencyObject parent)
+        {
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+            {
+                var child = VisualTreeHelper.GetChild(parent, i);
+                if (child is TextBlock tb)
+                {
+                    tb.Foreground = ThemeColors.Brush(ThemeColors.Text2);
+                }
+                else if (child is RadioButton rb)
+                {
+                    rb.Foreground = ThemeColors.Brush(ThemeColors.Text2);
+                }
+                else if (child is Slider slider)
+                {
+                    slider.Foreground = ThemeColors.Brush(ThemeColors.Accent);
+                }
+                else
+                {
+                    UpdateTextColors(child);
+                }
+            }
+        }
+
+        private void UpdateButtonColors(DependencyObject parent)
+        {
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+            {
+                var child = VisualTreeHelper.GetChild(parent, i);
+                if (child is Button btn && btn.Content?.ToString() != null)
+                {
+                    string content = btn.Content.ToString();
+                    if (content == "全选" || content == "清空")
+                    {
+                        btn.Background = ThemeColors.Brush(ThemeColors.BtnBg);
+                        btn.Foreground = ThemeColors.Brush(ThemeColors.Text2);
+                        btn.BorderBrush = ThemeColors.Brush(ThemeColors.Border);
+                    }
+                }
+                else if (child is CheckBox cb)
+                {
+                    cb.Foreground = ThemeColors.Brush(ThemeColors.Text);
+                }
+                else
+                {
+                    UpdateButtonColors(child);
+                }
+            }
         }
 
         private void InstallButton_Click(object sender, RoutedEventArgs e)

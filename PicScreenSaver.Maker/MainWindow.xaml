@@ -11,6 +11,24 @@
         MouseLeftButtonDown="TitleBar_MouseLeftButtonDown"
 >
     <Window.Resources>
+        <Style x:Key="TitleBarButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}"
+                                BorderThickness="0" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True"/>
+                            <Trigger Property="IsPressed" Value="True"/>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
         <Style x:Key="TabRadioStyle" TargetType="RadioButton">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="{DynamicResource Text2Brush}"/>
@@ -256,12 +274,14 @@
                            FontSize="12.5" FontWeight="Medium" Foreground="{DynamicResource Text2Brush}" FontFamily="Noto Sans SC"/>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
                     <Button x:Name="ThemeToggleBtn" Width="36" Height="44"
+                            Style="{StaticResource TitleBarButtonStyle}"
                             Background="Transparent" Foreground="{DynamicResource Text2Brush}" BorderThickness="0"
                             Cursor="Hand"
                             Click="ThemeToggleBtn_Click"
                             MouseEnter="WindowBtn_MouseEnter" MouseLeave="WindowBtn_MouseLeave"
                             ToolTip="&#x5207;&#x6362;&#x4E3B;&#x9898;"/>
                     <Button x:Name="MinimizeBtn" Width="36" Height="44"
+                            Style="{StaticResource TitleBarButtonStyle}"
                             Background="Transparent" BorderThickness="0" Cursor="Hand"
                             Click="MinimizeBtn_Click"
                             MouseEnter="WindowBtn_MouseEnter" MouseLeave="WindowBtn_MouseLeave">
@@ -272,6 +292,7 @@
                         </Viewbox>
                     </Button>
                     <Button x:Name="MaximizeBtn" Width="36" Height="44"
+                            Style="{StaticResource TitleBarButtonStyle}"
                             Background="Transparent" BorderThickness="0" Cursor="Hand"
                             Click="MaximizeBtn_Click"
                             MouseEnter="WindowBtn_MouseEnter" MouseLeave="WindowBtn_MouseLeave">
@@ -282,6 +303,7 @@
                         </Viewbox>
                     </Button>
                     <Button x:Name="CloseBtn" Width="36" Height="44"
+                            Style="{StaticResource TitleBarButtonStyle}"
                             Background="Transparent" BorderThickness="0" Cursor="Hand"
                             Click="CloseBtn_Click"
                             MouseEnter="CloseBtn_MouseEnter" MouseLeave="CloseBtn_MouseLeave">
