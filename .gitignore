@@ -17,9 +17,9 @@ packages/
 *.sln.docstates
 Thumbs.db
 
+# Generated screensaver files
+*.scr
+
 # Design doc backup
 .docs/
 PROGRESS_REPORT.md
-AGENTS.md
-PRODUCT_ v1.4.md
-fix.md

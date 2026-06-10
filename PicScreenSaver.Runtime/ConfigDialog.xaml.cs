@@ -586,7 +586,6 @@ namespace PicScreenSaver.Runtime
                 {
                     SetScreensaverRegistry(destPath);
                     InstallBtn.Visibility = Visibility.Collapsed;
-                    Close();
                 }
                 else
                 {

@@ -27,6 +27,7 @@ namespace PicScreenSaver.Maker
         private int _quality = 70;
         private int _maxWidth = 1920;
         private string _outputPath = "";
+        private string _selectedIconPath = "";
         private System.Threading.CancellationTokenSource _encodeCts;
         private bool _isDragging = false;
         private int _dragFromIndex = -1;
@@ -1284,6 +1285,62 @@ namespace PicScreenSaver.Maker
             if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK) { _outputPath = dialog.SelectedPath; OutputPathInput.Text = _outputPath; }
         }
 
+        private void BrowseIcon_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Filter = "图标和图片|*.ico;*.png;*.bmp;*.jpg;*.jpeg|所有文件|*.*",
+                Title = "选择图标文件"
+            };
+            if (dialog.ShowDialog() == true)
+            {
+                _selectedIconPath = dialog.FileName;
+                IconPathInput.Text = _selectedIconPath;
+                UpdateIconPreview(_selectedIconPath);
+            }
+        }
+
+        private void UpdateIconPreview(string iconPath)
+        {
+            try
+            {
+                var entries = IconConverter.LoadIcons(iconPath);
+                if (entries == null || entries.Count == 0)
+                {
+                    IconPreviewBorder.Visibility = Visibility.Collapsed;
+                    return;
+                }
+
+                var bitmap = IconConverter.GetIconPreview(entries, 256);
+                if (bitmap != null)
+                {
+                    using (var ms = new MemoryStream())
+                    {
+                        bitmap.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+                        ms.Position = 0;
+                        var bi = new System.Windows.Media.Imaging.BitmapImage();
+                        bi.BeginInit();
+                        bi.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
+                        bi.StreamSource = ms;
+                        bi.EndInit();
+                        bi.Freeze();
+                        IconPreview256.Source = bi;
+                    }
+                    bitmap.Dispose();
+                    IconPreviewBorder.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    IconPreviewBorder.Visibility = Visibility.Collapsed;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"更新图标预览失败: {ex.Message}");
+                IconPreviewBorder.Visibility = Visibility.Collapsed;
+            }
+        }
+
         private void UpdateEstimate()
         {
             if (EstimateSize == null) return;
@@ -1326,7 +1383,7 @@ namespace PicScreenSaver.Maker
             var tempPath = Path.Combine(Path.GetTempPath(), "PicScreenSaver_Preview.scr");
             try
             {
-                _packageBuilder.BuildPackage(runtimeTemplate, config, _images, tempPath, _quality, _maxWidth);
+                _packageBuilder.BuildPackage(runtimeTemplate, config, _images, tempPath, _quality, _maxWidth, _selectedIconPath);
                 var psi = new System.Diagnostics.ProcessStartInfo
                 {
                     FileName = tempPath,
@@ -1373,7 +1430,7 @@ namespace PicScreenSaver.Maker
 
             try
             {
-                _packageBuilder.BuildPackage(runtimeTemplate, config, _images, outputPath, _quality, _maxWidth);
+                _packageBuilder.BuildPackage(runtimeTemplate, config, _images, outputPath, _quality, _maxWidth, _selectedIconPath);
                 if (InstallYes.IsChecked == true) { InstallScreensaver(outputPath); ShowToast($"屏保已生成并安装：{outputName}.scr"); }
                 else ShowToast($"屏保已生成：{outputName}.scr");
             }

@@ -595,6 +595,36 @@
                                     </StackPanel>
                                 </Border>
 
+                                <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="16,14">
+                                    <StackPanel>
+                                        <TextBlock Text="&#x56FE;&#x6807;&#x8BBE;&#x7F6E;" FontSize="11" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC"/>
+                                        <TextBlock Text="&#x9009;&#x62E9;ico&#x6587;&#x4EF6;&#x6216;&#x56FE;&#x7247;&#x6587;&#x4EF6;" FontSize="10.5"
+                                                   Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC" Margin="0,1,0,8"/>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBox Grid.Column="0" x:Name="IconPathInput" Text="" Height="30"
+                                                     Background="{DynamicResource Surface2Brush}" Foreground="{DynamicResource Text2Brush}"
+                                                     BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1.5" FontFamily="Consolas"
+                                                     FontSize="11" VerticalContentAlignment="Center" Padding="8,0" IsReadOnly="True"
+                                                     Style="{StaticResource RoundedTextBoxStyle}"/>
+                                            <Button Grid.Column="1" Content="&#x6D4F;&#x89C8;" Click="BrowseIcon_Click"
+                                                    Background="{DynamicResource Surface3Brush}" Foreground="{DynamicResource Text2Brush}"
+                                                    BorderBrush="{DynamicResource Border2Brush}" BorderThickness="1.5" Padding="12,0" Height="30"
+                                                    FontSize="12" FontFamily="Noto Sans SC" Margin="8,0,0,0" Cursor="Hand"
+                                                    Style="{StaticResource RoundedButtonStyle}"/>
+                                        </Grid>
+                                        <Border x:Name="IconPreviewBorder" Background="{DynamicResource Surface3Brush}" CornerRadius="6" 
+                                                Width="48" Height="48" Margin="0,10,0,0" VerticalAlignment="Center"
+                                                HorizontalAlignment="Left" Visibility="Collapsed">
+                                            <Image x:Name="IconPreview256" Stretch="Uniform"/>
+                                        </Border>
+                                    </StackPanel>
+                                </Border>
+
                                 <Border Padding="16,14">
                                     <StackPanel>
                                         <TextBlock Text="&#x751F;&#x6210;&#x540E;&#x5B89;&#x88C5;" FontSize="11" FontWeight="SemiBold"

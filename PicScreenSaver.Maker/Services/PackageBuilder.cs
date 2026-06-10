@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -20,12 +21,18 @@ namespace PicScreenSaver.Maker.Services
             ushort wLanguage, byte[] lpData, uint cb);
 
         [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern bool UpdateResource(IntPtr hUpdate, ushort lpType, IntPtr lpName,
+            ushort wLanguage, byte[] lpData, uint cb);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool EndUpdateResource(IntPtr hUpdate,
             [MarshalAs(UnmanagedType.Bool)] bool fDiscard);
 
         private const string CONFIG_RESOURCE = "SSCONFIG";
         private const string IMAGE_RESOURCE  = "SSIMAGE";
+        private const ushort RT_ICON = 3;
+        private const ushort RT_GROUP_ICON = 14;
 
         public static byte[] LoadEmbeddedRuntime()
         {
@@ -61,7 +68,8 @@ namespace PicScreenSaver.Maker.Services
             List<ImageItem> images,
             string outputPath,
             int quality = 75,
-            int maxWidth = 1920)
+            int maxWidth = 1920,
+            string iconPath = null)
         {
             string tempPath = Path.Combine(Path.GetTempPath(),
                 "PicScreenSaver_" + Guid.NewGuid().ToString("N") + ".exe");
@@ -119,6 +127,12 @@ namespace PicScreenSaver.Maker.Services
                         finally { Marshal.FreeHGlobal(resName); }
                     }
 
+                    // 注入图标
+                    if (!string.IsNullOrEmpty(iconPath) && File.Exists(iconPath))
+                    {
+                        InjectIcoFile(hUpdate, iconPath);
+                    }
+
                     if (!EndUpdateResource(hUpdate, false))
                         throw new InvalidOperationException(
                             "EndUpdateResource 失败: " + Marshal.GetLastWin32Error());
@@ -136,6 +150,57 @@ namespace PicScreenSaver.Maker.Services
             {
                 if (File.Exists(tempPath)) File.Delete(tempPath);
             }
+        }
+
+        /// <summary>
+        /// 注入图标到PE资源
+        /// 使用IconConverter模块处理ico解析和图片转换
+        /// </summary>
+        private void InjectIcoFile(IntPtr hUpdate, string iconPath)
+        {
+            // 使用IconConverter加载图标
+            var allEntries = IconConverter.LoadIcons(iconPath);
+            if (allEntries == null || allEntries.Count == 0)
+                return;
+
+            // 获取Windows 7+所需的图标
+            var entries = IconConverter.GetWin7Entries(allEntries);
+            if (entries == null || entries.Count == 0)
+                return;
+
+            // 写入RT_ICON资源（ID从1开始）
+            var groupEntries = new List<byte>();
+            groupEntries.AddRange(BitConverter.GetBytes((ushort)0));
+            groupEntries.AddRange(BitConverter.GetBytes((ushort)1));
+            groupEntries.AddRange(BitConverter.GetBytes((ushort)entries.Count));
+
+            for (int i = 0; i < entries.Count; i++)
+            {
+                var entry = entries[i];
+                ushort iconId = (ushort)(i + 1);
+
+                IntPtr iconName = new IntPtr(iconId);
+                if (!UpdateResource(hUpdate, RT_ICON, iconName, 0,
+                    entry.Data, (uint)entry.Data.Length))
+                    throw new InvalidOperationException(
+                        "UpdateResource RT_ICON 失败: " + Marshal.GetLastWin32Error());
+
+                groupEntries.Add(entry.Width);
+                groupEntries.Add(entry.Height);
+                groupEntries.Add(entry.ColorCount);
+                groupEntries.Add(entry.Reserved);
+                groupEntries.AddRange(BitConverter.GetBytes(entry.Planes));
+                groupEntries.AddRange(BitConverter.GetBytes(entry.BitCount));
+                groupEntries.AddRange(BitConverter.GetBytes((uint)entry.Data.Length));
+                groupEntries.AddRange(BitConverter.GetBytes(iconId));
+            }
+
+            IntPtr groupName = new IntPtr(1);
+            var groupData = groupEntries.ToArray();
+            if (!UpdateResource(hUpdate, RT_GROUP_ICON, groupName, 0,
+                groupData, (uint)groupData.Length))
+                throw new InvalidOperationException(
+                    "UpdateResource RT_GROUP_ICON 失败: " + Marshal.GetLastWin32Error());
         }
     }
 }
