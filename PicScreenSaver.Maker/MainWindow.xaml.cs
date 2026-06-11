@@ -116,6 +116,7 @@ namespace PicScreenSaver.Maker
             CreateSliderButtons();
             SetThemeIcon(_isDarkTheme);
             UpdateSliderButtons();
+            UpdateIconUI();
         }
 
         private void UpdateTitle()
@@ -1259,7 +1260,7 @@ namespace PicScreenSaver.Maker
             if (dialog.ShowDialog() == true)
             {
                 _selectedIconPath = dialog.FileName;
-                IconPathInput.Text = _selectedIconPath;
+                UpdateIconUI();
                 UpdateIconPreview(_selectedIconPath);
             }
         }
@@ -1307,6 +1308,30 @@ namespace PicScreenSaver.Maker
                 System.Diagnostics.Debug.WriteLine($"更新图标预览失败: {ex.Message}");
                 IconPreviewBorder.Visibility = Visibility.Collapsed;
             }
+        }
+
+        private void UpdateIconUI()
+        {
+            bool hasIcon = !string.IsNullOrEmpty(_selectedIconPath);
+            if (hasIcon)
+            {
+                IconPathInput.Text = _selectedIconPath;
+                IconPathInput.Foreground = (System.Windows.Media.Brush)FindResource("Text2Brush");
+                ClearIconBtn.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                IconPathInput.Text = "\u672A\u8BBE\u7F6E\uFF08\u5C06\u4F7F\u7528\u9ED8\u8BA4\u56FE\u6807\uFF09";
+                IconPathInput.Foreground = (System.Windows.Media.Brush)FindResource("Text3Brush");
+                ClearIconBtn.Visibility = Visibility.Collapsed;
+                IconPreviewBorder.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void ClearIconBtn_Click(object sender, RoutedEventArgs e)
+        {
+            _selectedIconPath = "";
+            UpdateIconUI();
         }
 
         private void UpdateEstimate()

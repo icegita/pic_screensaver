@@ -596,16 +596,23 @@
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
                                             <TextBox Grid.Column="0" x:Name="IconPathInput" Text="" Height="30"
                                                      Background="{DynamicResource Surface2Brush}" Foreground="{DynamicResource Text2Brush}"
                                                      BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1.5" FontFamily="Consolas"
                                                      FontSize="11" VerticalContentAlignment="Center" Padding="8,0" IsReadOnly="True"
                                                      Style="{StaticResource RoundedTextBoxStyle}"/>
-                                            <Button Grid.Column="1" Content="&#x6D4F;&#x89C8;" Click="BrowseIcon_Click"
+                                            <Button Grid.Column="1" x:Name="ClearIconBtn" Content="✕" Click="ClearIconBtn_Click"
+                                                    Background="{DynamicResource Surface3Brush}" Foreground="{DynamicResource Text3Brush}"
+                                                    BorderBrush="{DynamicResource Border2Brush}" BorderThickness="1.5" Padding="0,0" Height="30"
+                                                    Width="30" FontSize="14" FontWeight="Bold" Margin="4,0,0,0" Cursor="Hand"
+                                                    Visibility="Collapsed" Style="{StaticResource RoundedButtonStyle}"
+                                                    ToolTip="&#x6E05;&#x9664;&#x56FE;&#x6807;"/>
+                                            <Button Grid.Column="2" Content="&#x6D4F;&#x89C8;" Click="BrowseIcon_Click"
                                                     Background="{DynamicResource Surface3Brush}" Foreground="{DynamicResource Text2Brush}"
                                                     BorderBrush="{DynamicResource Border2Brush}" BorderThickness="1.5" Padding="12,0" Height="30"
-                                                    FontSize="12" FontFamily="Noto Sans SC" Margin="8,0,0,0" Cursor="Hand"
+                                                    FontSize="12" FontFamily="Noto Sans SC" Margin="4,0,0,0" Cursor="Hand"
                                                     Style="{StaticResource RoundedButtonStyle}"/>
                                         </Grid>
                                         <Border x:Name="IconPreviewBorder" Background="{DynamicResource Surface3Brush}" CornerRadius="6" 
