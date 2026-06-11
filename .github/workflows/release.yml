@@ -1,33 +1,50 @@
-name: Build & Release
+name: Release
 
 on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
-    runs-on: windows-latest
-
+    runs-on: windows-2025
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - name: Restore NuGet packages
-        run: dotnet restore
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v3
 
-      - name: Build Release
-        run: dotnet build -c Release --no-restore
+      - name: Restore
+        run: msbuild PicScreenSaver.sln -t:Restore
 
-      - name: Extract version from tag
+      - name: Build
+        run: msbuild PicScreenSaver.sln -p:Configuration=Release
+
+      - name: Get version
         id: version
-        shell: bash
-        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+          echo "VERSION=$tag" >> $env:GITHUB_OUTPUT
 
-      - name: Create Release & upload exe
-        uses: softprops/action-gh-release@v2
+      - name: Package
+        shell: pwsh
+        run: |
+          $version = "${{ steps.version.outputs.VERSION }}"
+          $outputDir = "release"
+          New-Item -ItemType Directory -Path $outputDir -Force
+
+          $exe = Get-ChildItem "PicScreenSaver.Maker/bin/Release/net48/*.exe" | Select-Object -First 1
+          Copy-Item $exe.FullName -Destination "$outputDir/PicScreenSaver-${version}.exe"
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v3
         with:
-          name: PicScreenSaver v${{ steps.version.outputs.VERSION }}
-          body: |
-            PicScreenSaver v${{ steps.version.outputs.VERSION }}
+          name: ${{ steps.version.outputs.VERSION }}
+          generate_release_notes: true
           files: |
-            PicScreenSaver.Maker/bin/Release/net48/PicScreenSaver v${{ steps.version.outputs.VERSION }}.exe
+            release/*.exe
