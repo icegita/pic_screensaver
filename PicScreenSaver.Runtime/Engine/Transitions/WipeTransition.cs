@@ -31,6 +31,12 @@ namespace PicScreenSaver.Runtime.Engine.Transitions
         public static readonly WipeTransition WipeDown = new WipeTransition(
             "WipeDown", "WipeDown", "遮罩从下向上展开，逐渐露出新图");
 
+        public static readonly WipeTransition WipeFromCenter = new WipeTransition(
+            "WipeFromCenter", "WipeFromCenter", "遮罩从中心向外展开，逐渐露出新图");
+
+        public static readonly WipeTransition WipeToCenter = new WipeTransition(
+            "WipeToCenter", "WipeToCenter", "遮罩从四周向中心收缩，逐渐露出新图");
+
         public Storyboard Build(FrameworkElement outgoing, FrameworkElement incoming, double duration)
         {
             switch (Id)
@@ -39,6 +45,8 @@ namespace PicScreenSaver.Runtime.Engine.Transitions
                 case "WipeRight": return BuildWipeRight(outgoing, incoming, duration);
                 case "WipeUp": return BuildWipeUp(outgoing, incoming, duration);
                 case "WipeDown": return BuildWipeDown(outgoing, incoming, duration);
+                case "WipeFromCenter": return BuildWipeFromCenter(outgoing, incoming, duration);
+                case "WipeToCenter": return BuildWipeToCenter(outgoing, incoming, duration);
                 default: return BuildWipeLeft(outgoing, incoming, duration);
             }
         }
@@ -127,6 +135,58 @@ namespace PicScreenSaver.Runtime.Engine.Transitions
             var wipeAnim = new RectangleGeometryAnimation(
                 new Rect(0, h, w, 0),
                 new Rect(0, 0, w, h),
+                time);
+            Storyboard.SetTarget(wipeAnim, incoming);
+            Storyboard.SetTargetProperty(wipeAnim, new PropertyPath(UIElement.ClipProperty));
+
+            sb.Children.Add(wipeAnim);
+            return sb;
+        }
+
+        private Storyboard BuildWipeFromCenter(FrameworkElement outgoing, FrameworkElement incoming, double duration)
+        {
+            var sb = new Storyboard(); sb.Duration = new Duration(TimeSpan.FromSeconds(duration));
+            var time = TimeSpan.FromSeconds(duration);
+            double w = outgoing.ActualWidth;
+            double h = outgoing.ActualHeight;
+            double cx = w / 2;
+            double cy = h / 2;
+
+            // 从中心点开始，向四周扩展
+            incoming.Clip = new RectangleGeometry(new Rect(cx, cy, 0, 0));
+            incoming.Opacity = 1.0;
+            outgoing.Opacity = 1.0;
+            Panel.SetZIndex(incoming, 1);
+
+            var wipeAnim = new RectangleGeometryAnimation(
+                new Rect(cx, cy, 0, 0),
+                new Rect(0, 0, w, h),
+                time);
+            Storyboard.SetTarget(wipeAnim, incoming);
+            Storyboard.SetTargetProperty(wipeAnim, new PropertyPath(UIElement.ClipProperty));
+
+            sb.Children.Add(wipeAnim);
+            return sb;
+        }
+
+        private Storyboard BuildWipeToCenter(FrameworkElement outgoing, FrameworkElement incoming, double duration)
+        {
+            var sb = new Storyboard(); sb.Duration = new Duration(TimeSpan.FromSeconds(duration));
+            var time = TimeSpan.FromSeconds(duration);
+            double w = outgoing.ActualWidth;
+            double h = outgoing.ActualHeight;
+            double cx = w / 2;
+            double cy = h / 2;
+
+            // 从四周开始，向中心收缩
+            incoming.Clip = new RectangleGeometry(new Rect(0, 0, w, h));
+            incoming.Opacity = 1.0;
+            outgoing.Opacity = 1.0;
+            Panel.SetZIndex(incoming, 1);
+
+            var wipeAnim = new RectangleGeometryAnimation(
+                new Rect(0, 0, w, h),
+                new Rect(cx, cy, 0, 0),
                 time);
             Storyboard.SetTarget(wipeAnim, incoming);
             Storyboard.SetTargetProperty(wipeAnim, new PropertyPath(UIElement.ClipProperty));

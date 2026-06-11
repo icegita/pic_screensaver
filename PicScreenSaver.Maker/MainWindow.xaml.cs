@@ -42,10 +42,11 @@ namespace PicScreenSaver.Maker
 
         private static readonly string[] AllEffects = new[]
         {
-            "Fade", "FadeBlack", "FadeWhite", "CrossFade", "FadeBlur",
+            "Fade", "FadeBlack", "CrossFade",
             "SlideLeft", "SlideRight", "SlideUp", "SlideDown",
             "ZoomInFade", "ZoomOutFade", "ZoomIn", "ZoomOut", "CrossZoom",
             "WipeLeft", "WipeRight", "WipeUp", "WipeDown",
+            "WipeFromCenter", "WipeToCenter",
             "PushLeft", "PushUp", "PushRight", "PushDown",
             "RotateCW", "RotateCCW",
             "BlindsH", "BlindsV",
@@ -58,9 +59,7 @@ namespace PicScreenSaver.Maker
         {
             "旧图渐隐，新图渐现——最经典的过渡效果",
             "旧图淡至黑场，新图从黑场淡入",
-            "旧图淡至白场，新图从白场淡入",
             "新旧图叠加交叉淡变",
-            "旧图模糊淡出，新图清晰淡入",
             "旧图静止，新图从右侧滑入",
             "旧图静止，新图从左侧滑入",
             "旧图静止，新图从下方滑入",
@@ -74,6 +73,8 @@ namespace PicScreenSaver.Maker
             "遮罩从右向左展开，逐渐露出新图",
             "遮罩从上向下展开，逐渐露出新图",
             "遮罩从下向上展开，逐渐露出新图",
+            "遮罩从中心向外展开，逐渐露出新图",
+            "遮罩从四周向中心收缩，逐渐露出新图",
             "新旧图同步向左平移（翻页感）",
             "新旧图同步向上平移（翻页感）",
             "新旧图同步向右平移（翻页感）",
@@ -297,6 +298,11 @@ namespace PicScreenSaver.Maker
             Panel.SetZIndex(EffectPreviewImageA, 0);
             Panel.SetZIndex(EffectPreviewImageB, 0);
 
+            // 获取父容器尺寸作为基准
+            var parent = EffectPreviewImageA.Parent as FrameworkElement;
+            double pw = parent?.ActualWidth ?? 220;
+            double ph = parent?.ActualHeight ?? 160;
+
             var sb = new Storyboard();
             var duration = TimeSpan.FromSeconds(1.2);
 
@@ -317,58 +323,6 @@ namespace PicScreenSaver.Maker
                     ((DoubleAnimation)sb.Children[1]).BeginTime = TimeSpan.FromSeconds(0.6);
                     break;
 
-                case "FadeWhite":
-                    EffectPreviewImageA.Opacity = 1;
-                    EffectPreviewImageB.Opacity = 0;
-                    var fadeWhiteOverlay = new System.Windows.Shapes.Rectangle
-                    {
-                        Fill = System.Windows.Media.Brushes.White,
-                        HorizontalAlignment = HorizontalAlignment.Stretch,
-                        VerticalAlignment = VerticalAlignment.Stretch,
-                        Opacity = 0
-                    };
-                    var previewParent = EffectPreviewImageA.Parent as Panel;
-                    if (previewParent != null)
-                        previewParent.Children.Insert(1, fadeWhiteOverlay);
-                    Panel.SetZIndex(EffectPreviewImageA, 0);
-                    Panel.SetZIndex(fadeWhiteOverlay, 1);
-                    Panel.SetZIndex(EffectPreviewImageB, 2);
-                    sb.Children.Add(CreateDoubleAnimation(EffectPreviewImageA, "Opacity", 1, 0, TimeSpan.FromSeconds(0.6)));
-                    sb.Children.Add(CreateDoubleAnimation(fadeWhiteOverlay, "Opacity", 0, 1, TimeSpan.FromSeconds(0.6)));
-                    var hideWhiteAnim = CreateDoubleAnimation(fadeWhiteOverlay, "Opacity", 1, 0, TimeSpan.FromSeconds(0.6));
-                    ((DoubleAnimation)hideWhiteAnim).BeginTime = TimeSpan.FromSeconds(0.6);
-                    sb.Children.Add(hideWhiteAnim);
-                    sb.Children.Add(CreateDoubleAnimation(EffectPreviewImageB, "Opacity", 0, 1, TimeSpan.FromSeconds(0.6)));
-                    ((DoubleAnimation)sb.Children[3]).BeginTime = TimeSpan.FromSeconds(0.6);
-                    sb.Completed += (s2, e2) =>
-                    {
-                        if (previewParent != null && previewParent.Children.Contains(fadeWhiteOverlay))
-                            previewParent.Children.Remove(fadeWhiteOverlay);
-                    };
-                    break;
-
-                case "ZoomInFade":
-                    EffectPreviewImageA.Opacity = 1; EffectPreviewImageB.Opacity = 0;
-                    EffectPreviewImageB.RenderTransform = new ScaleTransform(0.95, 0.95);
-                    EffectPreviewImageB.RenderTransformOrigin = new Point(0.5, 0.5);
-                    Panel.SetZIndex(EffectPreviewImageB, 1);
-                    sb.Children.Add(CreateScaleAnimation(EffectPreviewImageB, "ScaleX", 0.95, 1.0, duration));
-                    sb.Children.Add(CreateScaleAnimation(EffectPreviewImageB, "ScaleY", 0.95, 1.0, duration));
-                    sb.Children.Add(CreateDoubleAnimation(EffectPreviewImageB, "Opacity", 0, 1, duration));
-                    sb.Children.Add(CreateDoubleAnimation(EffectPreviewImageA, "Opacity", 1, 0, duration));
-                    break;
-
-                case "ZoomOutFade":
-                    EffectPreviewImageA.Opacity = 1; EffectPreviewImageB.Opacity = 0;
-                    EffectPreviewImageA.RenderTransform = new ScaleTransform(1.05, 1.05);
-                    EffectPreviewImageA.RenderTransformOrigin = new Point(0.5, 0.5);
-                    Panel.SetZIndex(EffectPreviewImageA, 1);
-                    sb.Children.Add(CreateScaleAnimation(EffectPreviewImageA, "ScaleX", 1.05, 1.0, duration));
-                    sb.Children.Add(CreateScaleAnimation(EffectPreviewImageA, "ScaleY", 1.05, 1.0, duration));
-                    sb.Children.Add(CreateDoubleAnimation(EffectPreviewImageA, "Opacity", 1, 0, duration));
-                    sb.Children.Add(CreateDoubleAnimation(EffectPreviewImageB, "Opacity", 0, 1, duration));
-                    break;
-
                 case "CrossFade":
                     EffectPreviewImageA.Opacity = 1;
                     EffectPreviewImageB.Opacity = 0;
@@ -379,74 +333,72 @@ namespace PicScreenSaver.Maker
 
                 case "SlideLeft":
                     EffectPreviewImageA.Opacity = 1; EffectPreviewImageB.Opacity = 1;
-                    { var ox = EffectPreviewImageA.ActualWidth; EffectPreviewImageB.RenderTransform = new TranslateTransform(ox, 0);
+                    EffectPreviewImageB.RenderTransform = new TranslateTransform(pw, 0);
                     Panel.SetZIndex(EffectPreviewImageB, 1);
-                    sb.Children.Add(CreateTranslateAnimation(EffectPreviewImageB, "X", ox, 0, duration)); }
+                    sb.Children.Add(CreateTranslateAnimation(EffectPreviewImageB, "X", pw, 0, duration));
                     break;
                 case "SlideRight":
                     EffectPreviewImageA.Opacity = 1; EffectPreviewImageB.Opacity = 1;
-                    { var ox = EffectPreviewImageA.ActualWidth; EffectPreviewImageB.RenderTransform = new TranslateTransform(-ox, 0);
+                    EffectPreviewImageB.RenderTransform = new TranslateTransform(-pw, 0);
                     Panel.SetZIndex(EffectPreviewImageB, 1);
-                    sb.Children.Add(CreateTranslateAnimation(EffectPreviewImageB, "X", -ox, 0, duration)); }
+                    sb.Children.Add(CreateTranslateAnimation(EffectPreviewImageB, "X", -pw, 0, duration));
                     break;
                 case "SlideUp":
                     EffectPreviewImageA.Opacity = 1; EffectPreviewImageB.Opacity = 1;
-                    { var oy = EffectPreviewImageA.ActualHeight; EffectPreviewImageB.RenderTransform = new TranslateTransform(0, oy);
+                    EffectPreviewImageB.RenderTransform = new TranslateTransform(0, ph);
                     Panel.SetZIndex(EffectPreviewImageB, 1);
-                    sb.Children.Add(CreateTranslateAnimation(EffectPreviewImageB, "Y", oy, 0, duration)); }
+                    sb.Children.Add(CreateTranslateAnimation(EffectPreviewImageB, "Y", ph, 0, duration));
                     break;
                 case "SlideDown":
                     EffectPreviewImageA.Opacity = 1; EffectPreviewImageB.Opacity = 1;
-                    { var oy = EffectPreviewImageA.ActualHeight; EffectPreviewImageB.RenderTransform = new TranslateTransform(0, -oy);
+                    EffectPreviewImageB.RenderTransform = new TranslateTransform(0, -ph);
                     Panel.SetZIndex(EffectPreviewImageB, 1);
-                    sb.Children.Add(CreateTranslateAnimation(EffectPreviewImageB, "Y", -oy, 0, duration)); }
+                    sb.Children.Add(CreateTranslateAnimation(EffectPreviewImageB, "Y", -ph, 0, duration));
                     break;
 
                 case "WipeLeft":
                 case "WipeRight":
                 case "WipeUp":
                 case "WipeDown":
+                case "WipeFromCenter":
+                case "WipeToCenter":
                     PlayWipePreview(effectName, duration);
                     return;
 
                 case "PushLeft":
                     EffectPreviewImageA.Opacity = 1; EffectPreviewImageB.Opacity = 1;
-                    { var ox = EffectPreviewImageA.ActualWidth;
                     EffectPreviewImageA.RenderTransform = new TranslateTransform(0, 0);
-                    EffectPreviewImageB.RenderTransform = new TranslateTransform(ox, 0);
+                    EffectPreviewImageB.RenderTransform = new TranslateTransform(pw, 0);
                     Panel.SetZIndex(EffectPreviewImageB, 1);
-                    sb.Children.Add(CreateTranslateAnimation(EffectPreviewImageA, "X", 0, -ox, duration));
-                    sb.Children.Add(CreateTranslateAnimation(EffectPreviewImageB, "X", ox, 0, duration)); }
+                    sb.Children.Add(CreateTranslateAnimation(EffectPreviewImageA, "X", 0, -pw, duration));
+                    sb.Children.Add(CreateTranslateAnimation(EffectPreviewImageB, "X", pw, 0, duration));
                     break;
 
                 case "PushUp":
                     EffectPreviewImageA.Opacity = 1; EffectPreviewImageB.Opacity = 1;
-                    { var oy = EffectPreviewImageA.ActualHeight;
                     EffectPreviewImageA.RenderTransform = new TranslateTransform(0, 0);
-                    EffectPreviewImageB.RenderTransform = new TranslateTransform(0, oy);
+                    EffectPreviewImageB.RenderTransform = new TranslateTransform(0, ph);
                     Panel.SetZIndex(EffectPreviewImageB, 1);
-                    sb.Children.Add(CreateTranslateAnimation(EffectPreviewImageA, "Y", 0, -oy, duration));
-                    sb.Children.Add(CreateTranslateAnimation(EffectPreviewImageB, "Y", oy, 0, duration)); }
+                    sb.Children.Add(CreateTranslateAnimation(EffectPreviewImageA, "Y", 0, -ph, duration));
+                    sb.Children.Add(CreateTranslateAnimation(EffectPreviewImageB, "Y", ph, 0, duration));
                     break;
 
                 case "PushRight":
                     EffectPreviewImageA.Opacity = 1; EffectPreviewImageB.Opacity = 1;
-                    { var ox = EffectPreviewImageA.ActualWidth;
                     EffectPreviewImageA.RenderTransform = new TranslateTransform(0, 0);
-                    EffectPreviewImageB.RenderTransform = new TranslateTransform(-ox, 0);
+                    EffectPreviewImageB.RenderTransform = new TranslateTransform(-pw, 0);
                     Panel.SetZIndex(EffectPreviewImageB, 1);
-                    sb.Children.Add(CreateTranslateAnimation(EffectPreviewImageA, "X", 0, ox, duration));
-                    sb.Children.Add(CreateTranslateAnimation(EffectPreviewImageB, "X", -ox, 0, duration)); }
+                    sb.Children.Add(CreateTranslateAnimation(EffectPreviewImageA, "X", 0, pw, duration));
+                    sb.Children.Add(CreateTranslateAnimation(EffectPreviewImageB, "X", -pw, 0, duration));
                     break;
 
                 case "PushDown":
                     EffectPreviewImageA.Opacity = 1; EffectPreviewImageB.Opacity = 1;
-                    { var oy = EffectPreviewImageA.ActualHeight;
                     EffectPreviewImageA.RenderTransform = new TranslateTransform(0, 0);
-                    EffectPreviewImageB.RenderTransform = new TranslateTransform(0, -oy);
+                    EffectPreviewImageB.RenderTransform = new TranslateTransform(0, -ph);
                     Panel.SetZIndex(EffectPreviewImageB, 1);
-                    sb.Children.Add(CreateTranslateAnimation(EffectPreviewImageA, "Y", 0, oy, duration));
-                    sb.Children.Add(CreateTranslateAnimation(EffectPreviewImageB, "Y", -oy, 0, duration)); }
+                    sb.Children.Add(CreateTranslateAnimation(EffectPreviewImageA, "Y", 0, ph, duration));
+                    sb.Children.Add(CreateTranslateAnimation(EffectPreviewImageB, "Y", -ph, 0, duration));
                     break;
 
                 case "FadeBlur":
@@ -524,8 +476,7 @@ namespace PicScreenSaver.Maker
                 case "CircleReveal":
                     EffectPreviewImageA.Opacity = 1; EffectPreviewImageB.Opacity = 1;
                     Panel.SetZIndex(EffectPreviewImageB, 1);
-                    { double pw = EffectPreviewImageA.ActualWidth, ph = EffectPreviewImageA.ActualHeight;
-                    double maxR = Math.Sqrt(pw*pw + ph*ph) / 2.0;
+                    { double maxR = Math.Sqrt(pw*pw + ph*ph) / 2.0;
                     EffectPreviewImageB.Clip = new EllipseGeometry(new Point(pw/2, ph/2), 0, 0);
                     var circleAnim = new EllipseRadiusAnimation(new Point(pw/2, ph/2), 0, 0, maxR, maxR, duration);
                     Storyboard.SetTarget(circleAnim, EffectPreviewImageB);
@@ -537,7 +488,7 @@ namespace PicScreenSaver.Maker
                 case "DiamondReveal":
                     EffectPreviewImageA.Opacity = 1; EffectPreviewImageB.Opacity = 1;
                     Panel.SetZIndex(EffectPreviewImageB, 1);
-                    { var dAnim = new DiamondRevealAnimation(EffectPreviewImageA.ActualWidth, EffectPreviewImageA.ActualHeight, duration);
+                    { var dAnim = new DiamondRevealAnimation(pw, ph, duration);
                     Storyboard.SetTarget(dAnim, EffectPreviewImageB);
                     Storyboard.SetTargetProperty(dAnim, new PropertyPath("Clip"));
                     sb.Children.Add(dAnim);
@@ -551,9 +502,8 @@ namespace PicScreenSaver.Maker
                 case "RadialWipe":
                     EffectPreviewImageA.Opacity = 1; EffectPreviewImageB.Opacity = 1;
                     Panel.SetZIndex(EffectPreviewImageB, 1);
-                    { double rw = EffectPreviewImageA.ActualWidth, rh = EffectPreviewImageA.ActualHeight;
-                    double r = Math.Sqrt(rw*rw + rh*rh);
-                    var radialAnim = new RadialSectorAnimation(rw/2, rh/2, r, duration);
+                    { double r = Math.Sqrt(pw*pw + ph*ph);
+                    var radialAnim = new RadialSectorAnimation(pw/2, ph/2, r, duration);
                     Storyboard.SetTarget(radialAnim, EffectPreviewImageB);
                     Storyboard.SetTargetProperty(radialAnim, new PropertyPath("Clip"));
                     sb.Children.Add(radialAnim);
@@ -577,18 +527,25 @@ namespace PicScreenSaver.Maker
 
         private void PlayWipePreview(string effectName, TimeSpan duration)
         {
-            double pw = EffectPreviewImageA.ActualWidth, ph = EffectPreviewImageA.ActualHeight;
+            // 使用父容器的尺寸作为基准，确保中心点正确
+            var parent = EffectPreviewImageA.Parent as FrameworkElement;
+            double pw = parent?.ActualWidth ?? EffectPreviewImageA.ActualWidth;
+            double ph = parent?.ActualHeight ?? EffectPreviewImageA.ActualHeight;
             EffectPreviewImageA.Opacity = 1; EffectPreviewImageB.Opacity = 1;
             Panel.SetZIndex(EffectPreviewImageB, 1);
 
             Rect fromRect;
             Rect toRect = new Rect(0, 0, pw, ph);
+            double cx = pw / 2, cy = ph / 2;
             switch (effectName)
             {
-                case "WipeLeft":  fromRect = new Rect(0, 0, 0, ph); break;
-                case "WipeRight": fromRect = new Rect(pw, 0, 0, ph); break;
-                case "WipeUp":    fromRect = new Rect(0, 0, pw, 0); break;
-                default:          fromRect = new Rect(0, ph, pw, 0); break;
+                case "WipeLeft":       fromRect = new Rect(0, 0, 0, ph); break;
+                case "WipeRight":      fromRect = new Rect(pw, 0, 0, ph); break;
+                case "WipeUp":         fromRect = new Rect(0, 0, pw, 0); break;
+                case "WipeDown":       fromRect = new Rect(0, ph, pw, 0); break;
+                case "WipeFromCenter": fromRect = new Rect(cx, cy, 0, 0); break;
+                case "WipeToCenter":   fromRect = new Rect(0, 0, pw, ph); toRect = new Rect(cx, cy, 0, 0); break;
+                default:               fromRect = new Rect(0, ph, pw, 0); break;
             }
             EffectPreviewImageB.Clip = new RectangleGeometry(fromRect);
 
@@ -673,7 +630,10 @@ namespace PicScreenSaver.Maker
 
         private void PlayBlindsPreview(string effectName, TimeSpan duration)
         {
-            double pw = EffectPreviewImageA.ActualWidth, ph = EffectPreviewImageA.ActualHeight;
+            // 使用父容器的尺寸作为基准
+            var parent = EffectPreviewImageA.Parent as FrameworkElement;
+            double pw = parent?.ActualWidth ?? EffectPreviewImageA.ActualWidth;
+            double ph = parent?.ActualHeight ?? EffectPreviewImageA.ActualHeight;
             int count = 8;
 
             EffectPreviewImageA.Opacity = 1;
@@ -692,7 +652,10 @@ namespace PicScreenSaver.Maker
 
         private void PlayCheckerboardPreview(TimeSpan duration)
         {
-            double pw = EffectPreviewImageA.ActualWidth, ph = EffectPreviewImageA.ActualHeight;
+            // 使用父容器的尺寸作为基准
+            var parent = EffectPreviewImageA.Parent as FrameworkElement;
+            double pw = parent?.ActualWidth ?? EffectPreviewImageA.ActualWidth;
+            double ph = parent?.ActualHeight ?? EffectPreviewImageA.ActualHeight;
             int cols = 8, rows = 6;
 
             EffectPreviewImageA.Opacity = 1;
@@ -1306,6 +1269,8 @@ namespace PicScreenSaver.Maker
             try
             {
                 var entries = IconConverter.LoadIcons(iconPath);
+                System.Diagnostics.Debug.WriteLine($"LoadIcons返回: {entries?.Count ?? 0} 个条目");
+                
                 if (entries == null || entries.Count == 0)
                 {
                     IconPreviewBorder.Visibility = Visibility.Collapsed;
@@ -1313,6 +1278,8 @@ namespace PicScreenSaver.Maker
                 }
 
                 var bitmap = IconConverter.GetIconPreview(entries, 256);
+                System.Diagnostics.Debug.WriteLine($"GetIconPreview返回: {bitmap != null}");
+                
                 if (bitmap != null)
                 {
                     using (var ms = new MemoryStream())
@@ -1491,14 +1458,15 @@ namespace PicScreenSaver.Maker
         {
             var dialog = new OpenFileDialog
             {
-                Filter = "屏保项目文件 (*.ssproj)|*.ssproj|所有文件|*.*",
+                Filter = "屏保项目文件 (*.pss)|*.pss|所有文件|*.*",
                 Title = "打开项目"
             };
             if (dialog.ShowDialog() != true) return;
 
             try
             {
-                var json = File.ReadAllText(dialog.FileName);
+                var encryptedData = File.ReadAllText(dialog.FileName);
+                var json = SimpleEncrypt.Decrypt(encryptedData);
                 var project = Newtonsoft.Json.JsonConvert.DeserializeObject<ProjectFile>(json);
                 if (project == null) { ShowToast("项目文件格式无效"); return; }
 
@@ -1560,9 +1528,9 @@ namespace PicScreenSaver.Maker
         {
             var dialog = new SaveFileDialog
             {
-                Filter = "屏保项目文件 (*.ssproj)|*.ssproj|所有文件|*.*",
+                Filter = "屏保项目文件 (*.pss)|*.pss|所有文件|*.*",
                 Title = "保存项目",
-                FileName = SaverNameInput.Text.Trim() + ".ssproj"
+                FileName = SaverNameInput.Text.Trim() + ".pss"
             };
             if (dialog.ShowDialog() != true) return;
 
@@ -1587,7 +1555,8 @@ namespace PicScreenSaver.Maker
                 };
 
                 var json = Newtonsoft.Json.JsonConvert.SerializeObject(project, Newtonsoft.Json.Formatting.Indented);
-                File.WriteAllText(dialog.FileName, json);
+                var encryptedData = SimpleEncrypt.Encrypt(json);
+                File.WriteAllText(dialog.FileName, encryptedData);
             }
             catch (Exception ex)
             {

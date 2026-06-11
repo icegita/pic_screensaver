@@ -416,8 +416,6 @@
                             <RowDefinition Height="200"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
                         <Border Grid.Row="0" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="12,0" Height="46">
                             <TextBlock Text="&#x9884;&#x89C8;" FontSize="11" FontWeight="SemiBold"
@@ -432,23 +430,16 @@
                                 <TextBlock x:Name="PreviewFileName" FontSize="11" Foreground="{DynamicResource TextBrush}" FontFamily="Consolas" Margin="0,2,0,0"/>
                             </StackPanel>
                         </Border>
-                        <Border Grid.Row="3" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="16,8">
+                        <Border Grid.Row="3" Padding="16,8">
                             <StackPanel>
                                 <TextBlock Text="&#x539F;&#x59CB;" FontSize="10.5" Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC"/>
                                 <TextBlock x:Name="PreviewResolution" FontSize="11" Foreground="{DynamicResource TextBrush}" FontFamily="Consolas" Margin="0,2,0,0"/>
                                 <TextBlock x:Name="PreviewOriginalSize" FontSize="11" Foreground="{DynamicResource TextBrush}" FontFamily="Consolas" Margin="0,1,0,0"/>
-                            </StackPanel>
-                        </Border>
-                        <Border Grid.Row="4" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="16,8">
-                            <StackPanel>
-                                <TextBlock Text="&#x538B;&#x7F29;&#x540E;" FontSize="10.5" Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC"/>
+                                <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Margin="0,6,0,0"/>
+                                <TextBlock Text="&#x538B;&#x7F29;&#x540E;" FontSize="10.5" Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC" Margin="0,6,0,0"/>
                                 <TextBlock x:Name="PreviewCompressedSize" FontSize="11" Foreground="{DynamicResource SuccessBrush}" FontFamily="Consolas" Margin="0,2,0,0"/>
                                 <TextBlock Text="&#x538B;&#x7F29;&#x7387;" FontSize="10.5" Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC" Margin="0,4,0,0"/>
                                 <TextBlock x:Name="PreviewCompressionRatio" FontSize="11" Foreground="{DynamicResource SuccessBrush}" FontFamily="Consolas" Margin="0,1,0,0"/>
-                            </StackPanel>
-                        </Border>
-                        <Border Grid.Row="5" Padding="16,8">
-                            <StackPanel>
                             </StackPanel>
                         </Border>
                     </Grid>

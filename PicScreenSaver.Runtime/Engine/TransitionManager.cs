@@ -68,9 +68,7 @@ namespace PicScreenSaver.Runtime.Engine
             {
                 FadeTransition.Fade,
                 FadeTransition.FadeBlack,
-                FadeTransition.FadeWhite,
                 FadeTransition.CrossFade,
-                FadeTransition.FadeBlur,
                 SlideTransition.SlideLeft,
                 SlideTransition.SlideRight,
                 SlideTransition.SlideUp,
@@ -83,6 +81,8 @@ namespace PicScreenSaver.Runtime.Engine
                 WipeTransition.WipeRight,
                 WipeTransition.WipeUp,
                 WipeTransition.WipeDown,
+                WipeTransition.WipeFromCenter,
+                WipeTransition.WipeToCenter,
                 SpecialTransition.PushLeft,
                 SpecialTransition.PushUp,
                 SpecialTransition.PushRight,

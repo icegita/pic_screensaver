@@ -19,10 +19,11 @@ namespace PicScreenSaver.Runtime
         private readonly ScreensaverConfig _config;
         private static readonly string[] AllEffects = new[]
         {
-            "Fade", "FadeBlack", "FadeWhite", "CrossFade", "FadeBlur",
+            "Fade", "FadeBlack", "CrossFade",
             "SlideLeft", "SlideRight", "SlideUp", "SlideDown",
             "ZoomInFade", "ZoomOutFade", "ZoomIn", "ZoomOut", "CrossZoom",
             "WipeLeft", "WipeRight", "WipeUp", "WipeDown",
+            "WipeFromCenter", "WipeToCenter",
             "PushLeft", "PushUp", "PushRight", "PushDown",
             "RotateCW", "RotateCCW",
             "BlindsH", "BlindsV",
@@ -38,9 +39,7 @@ namespace PicScreenSaver.Runtime
         {
             "旧图渐隐，新图渐现——最经典的过渡效果",
             "旧图淡至黑场，新图从黑场淡入",
-            "旧图淡至白场，新图从白场淡入",
             "新旧图叠加交叉淡变",
-            "旧图模糊淡出，新图清晰淡入",
             "旧图静止，新图从右侧滑入",
             "旧图静止，新图从左侧滑入",
             "旧图静止，新图从下方滑入",
@@ -54,6 +53,8 @@ namespace PicScreenSaver.Runtime
             "遮罩从右向左展开，逐渐露出新图",
             "遮罩从上向下展开，逐渐露出新图",
             "遮罩从下向上展开，逐渐露出新图",
+            "遮罩从中心向外展开，逐渐露出新图",
+            "遮罩从四周向中心收缩，逐渐露出新图",
             "新旧图同步向左平移（翻页感）",
             "新旧图同步向上平移（翻页感）",
             "新旧图同步向右平移（翻页感）",

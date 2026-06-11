@@ -179,22 +179,123 @@ namespace PicScreenSaver.Maker.Services
             if (entries == null || entries.Count == 0)
                 return null;
 
-            // 找到最接近的尺寸
-            var entry = entries.FirstOrDefault(e => e.Width == size) ??
-                       entries.OrderBy(e => Math.Abs(e.Width - size)).FirstOrDefault();
+            // 找到最接近且不小于目标尺寸的条目（优先选择清晰度足够的）
+            var entry = entries.FirstOrDefault(e => GetEffectiveWidth(e.Width) == size) ??
+                       entries.Where(e => GetEffectiveWidth(e.Width) >= size)
+                              .OrderBy(e => GetEffectiveWidth(e.Width))
+                              .FirstOrDefault() ??
+                       entries.OrderBy(e => Math.Abs(GetEffectiveWidth(e.Width) - size)).FirstOrDefault();
 
             if (entry == null || entry.Data == null)
                 return null;
 
             try
             {
-                using (var ms = new MemoryStream(entry.Data))
+                // 检查是否是PNG格式（头部 89 50 4E 47）
+                if (entry.Data.Length >= 4 && 
+                    entry.Data[0] == 0x89 && entry.Data[1] == 0x50 && 
+                    entry.Data[2] == 0x4E && entry.Data[3] == 0x47)
                 {
-                    return new Bitmap(ms);
+                    // PNG格式，直接加载
+                    using (var ms = new MemoryStream(entry.Data))
+                    {
+                        return new Bitmap(ms);
+                    }
+                }
+                else
+                {
+                    // BMP格式，使用更可靠的直接像素复制方法
+                    int width = GetEffectiveWidth(entry.Width);
+                    return CreateBitmapFromDib(entry.Data, width, entry.Height);
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"GetIconPreview异常: {ex.Message}");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 获取实际宽度（ICO格式中0表示256）
+        /// </summary>
+        private static int GetEffectiveWidth(byte width)
+        {
+            return width == 0 ? 256 : width;
+        }
+
+        /// <summary>
+        /// 从DIB数据创建Bitmap（使用直接像素复制方法）
+        /// </summary>
+        private static Bitmap CreateBitmapFromDib(byte[] dibData, int width, int height)
+        {
+            try
+            {
+                if (dibData == null || dibData.Length < 40)
+                    return null;
+
+                int biSize = BitConverter.ToInt32(dibData, 0);
+                short bitCount = BitConverter.ToInt16(dibData, 14);
+                int bytesPerPixel = (bitCount + 7) / 8;
+                
+                // 计算像素数据起始位置（跳过 BITMAPINFOHEADER 和颜色表）
+                int pixelOffset = biSize;
+                
+                // 如果有颜色表，跳过它
+                // 颜色表大小 = biClrUsed * 4，如果 biClrUsed = 0 且 bitCount <= 8，则颜色表大小 = 2^bitCount * 4
+                if (bitCount <= 8)
+                {
+                    int clrUsed = BitConverter.ToInt32(dibData, 32);
+                    if (clrUsed == 0)
+                        clrUsed = 1 << bitCount;
+                    pixelOffset += clrUsed * 4;
+                }
+                
+                // 像素数据大小 = width * height * bytesPerPixel
+                int pixelDataSize = width * height * bytesPerPixel;
+                
+                // 检查是否有足够的数据
+                if (dibData.Length < pixelOffset + pixelDataSize)
+                {
+                    System.Diagnostics.Debug.WriteLine($"DIB数据不足: 需要 {pixelOffset + pixelDataSize} 字节，实际 {dibData.Length} 字节");
+                    return null;
+                }
+
+                // 创建位图（直接使用像素数据）
+                var bmp = new Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                var data = bmp.LockBits(new Rectangle(0, 0, width, height), 
+                    System.Drawing.Imaging.ImageLockMode.WriteOnly, 
+                    System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+
+                try
+                {
+                    // ICO 中的像素数据是 BGRA 格式，从上到下排列
+                    int srcOffset = pixelOffset;
+                    int dstStride = data.Stride;
+                    System.IntPtr dstPtr = data.Scan0;
+
+                    for (int y = 0; y < height; y++)
+                    {
+                        // 计算目标指针位置（注意：Bitmap 是从下到上存储的）
+                        System.IntPtr rowPtr = dstPtr + (height - 1 - y) * dstStride;
+                        
+                        // 复制一行像素数据
+                        System.Runtime.InteropServices.Marshal.Copy(
+                            dibData, srcOffset, rowPtr, width * bytesPerPixel);
+                        
+                        srcOffset += width * bytesPerPixel;
+                    }
+                }
+                finally
+                {
+                    bmp.UnlockBits(data);
+                }
+
+                return bmp;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"CreateBitmapFromDib异常: {ex.Message}");
                 return null;
             }
         }
@@ -211,8 +312,11 @@ namespace PicScreenSaver.Maker.Services
 
             foreach (var targetSize in TargetSizes)
             {
-                var match = allEntries.FirstOrDefault(e => e.Width == targetSize) ??
-                           allEntries.OrderBy(e => Math.Abs(e.Width - targetSize)).FirstOrDefault();
+                var match = allEntries.FirstOrDefault(e => GetEffectiveWidth(e.Width) == targetSize) ??
+                           allEntries.Where(e => GetEffectiveWidth(e.Width) >= targetSize)
+                                    .OrderBy(e => GetEffectiveWidth(e.Width))
+                                    .FirstOrDefault() ??
+                           allEntries.OrderBy(e => Math.Abs(GetEffectiveWidth(e.Width) - targetSize)).FirstOrDefault();
 
                 if (match != null && !selected.Contains(match))
                     selected.Add(match);
