@@ -752,9 +752,9 @@ namespace PicScreenSaver.Maker
                 card.MouseEnter += Card_MouseEnter;
                 card.MouseLeave += Card_MouseLeave;
 
-                var grid = new Grid();
+                var grid = new Grid { Height = 110, ClipToBounds = true };
                 if (item.Thumbnail != null)
-                    grid.Children.Add(new Image { Source = item.Thumbnail, Stretch = Stretch.UniformToFill, Height = 110 });
+                    grid.Children.Add(new Image { Source = item.Thumbnail, Stretch = Stretch.UniformToFill, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center });
 
                 grid.Children.Add(new TextBlock { Text = item.DisplayOrder.ToString("D2"), FontSize = 10, FontWeight = FontWeights.SemiBold, Foreground = ThemeColors.Brush(ThemeColors.BadgeText), FontFamily = new FontFamily("Consolas"), Margin = new Thickness(7, 1, 0, 0), HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top });
 
@@ -960,9 +960,9 @@ namespace PicScreenSaver.Maker
 
             // 复制缩略图 + 序号到幽灵
             var item = _images[_dragFromIndex];
-            var ghostGrid = new Grid();
+            var ghostGrid = new Grid { Height = 110, ClipToBounds = true };
             if (item.Thumbnail != null)
-                ghostGrid.Children.Add(new Image { Source = item.Thumbnail, Stretch = Stretch.UniformToFill, Height = 110 });
+                ghostGrid.Children.Add(new Image { Source = item.Thumbnail, Stretch = Stretch.UniformToFill, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center });
             ghostGrid.Children.Add(new TextBlock
             {
                 Text = (_dragFromIndex + 1).ToString("D2"),

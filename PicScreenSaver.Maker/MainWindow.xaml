@@ -377,25 +377,26 @@
                             <DockPanel>
                                 <Button Content="&#x6DFB;&#x52A0;&#x56FE;&#x7247;" Click="AddImages_Click"
                                         DockPanel.Dock="Left"
-                                        Background="{DynamicResource Surface2Brush}" Foreground="{DynamicResource Text2Brush}" BorderBrush="{DynamicResource BorderBrush}"
-                                        BorderThickness="1" Padding="12,0" Height="30" FontSize="12" Style="{StaticResource RoundedButtonStyle}"
-                                        FontFamily="Noto Sans SC" Cursor="Hand"/>
-                                <Separator Width="1" DockPanel.Dock="Left" Background="{DynamicResource BorderBrush}" Margin="8,4"/>
+                                        Background="{DynamicResource AccentBrush}" Foreground="{DynamicResource WhiteBrush}" BorderThickness="0"
+                                        Style="{StaticResource RoundedButtonStyle}"
+                                        FontSize="12" FontWeight="SemiBold" FontFamily="Noto Sans SC"
+                                        Padding="14,0" Height="30" Cursor="Hand"/>
+                                <Border Width="1" DockPanel.Dock="Left" Background="{DynamicResource BorderBrush}" Margin="12,4"/>
                                 <Button Content="&#x524D;&#x79FB;" Click="MoveUp_Click"
                                         DockPanel.Dock="Left"
                                         Background="{DynamicResource Surface2Brush}" Foreground="{DynamicResource Text2Brush}" BorderBrush="{DynamicResource BorderBrush}"
-                                        BorderThickness="1" Padding="12,0" Height="30" FontSize="12" Style="{StaticResource RoundedButtonStyle}"
-                                        FontFamily="Noto Sans SC" Cursor="Hand"/>
+                                        BorderThickness="1" Padding="14,0" Height="30" FontSize="12" Style="{StaticResource RoundedButtonStyle}"
+                                        FontFamily="Noto Sans SC" Cursor="Hand" Margin="0,0,6,0"/>
                                 <Button Content="&#x540E;&#x79FB;" Click="MoveDown_Click"
                                         DockPanel.Dock="Left"
                                         Background="{DynamicResource Surface2Brush}" Foreground="{DynamicResource Text2Brush}" BorderBrush="{DynamicResource BorderBrush}"
-                                        BorderThickness="1" Padding="12,0" Height="30" FontSize="12" Style="{StaticResource RoundedButtonStyle}"
+                                        BorderThickness="1" Padding="14,0" Height="30" FontSize="12" Style="{StaticResource RoundedButtonStyle}"
                                         FontFamily="Noto Sans SC" Cursor="Hand"/>
-                                <Separator Width="1" DockPanel.Dock="Left" Background="{DynamicResource BorderBrush}" Margin="8,4"/>
+                                <Border Width="1" DockPanel.Dock="Left" Background="{DynamicResource BorderBrush}" Margin="12,4"/>
                                 <Button Content="&#x5168;&#x90E8;&#x79FB;&#x9664;" Click="RemoveAllImages_Click"
                                         DockPanel.Dock="Left"
                                         Background="{DynamicResource Surface2Brush}" Foreground="{DynamicResource DangerBrush}" BorderBrush="{DynamicResource DangerBgBrush}"
-                                        BorderThickness="1" Padding="12,0" Height="30" FontSize="12" Style="{StaticResource RoundedButtonStyle}"
+                                        BorderThickness="1" Padding="14,0" Height="30" FontSize="12" Style="{StaticResource RoundedButtonStyle}"
                                         FontFamily="Noto Sans SC" Cursor="Hand"/>
                                 <TextBlock x:Name="ImageCountText" VerticalAlignment="Center"
                                            Margin="12,0,0,0" FontSize="12"
@@ -422,7 +423,7 @@
                                        Foreground="{DynamicResource Text3Brush}" FontFamily="Noto Sans SC" VerticalAlignment="Center"/>
                         </Border>
                         <Border Grid.Row="1" Background="{DynamicResource Surface2Brush}" ClipToBounds="True">
-                            <Image x:Name="PreviewImage" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"/>
+                            <Image x:Name="PreviewImage" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <Border Grid.Row="2" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="16,8">
                             <StackPanel>
