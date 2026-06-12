@@ -1,11 +1,11 @@
 <Window x:Class="PicScreenSaver.Maker.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="PicScreenSaver" Width="975" Height="650" MinWidth="975" MinHeight="650"
+        Title="PicScreenSaver" Width="1007" Height="682" MinWidth="1007" MinHeight="682"
         WindowStartupLocation="CenterScreen"
         Background="Transparent"
         WindowStyle="None"
-        ResizeMode="CanResizeWithGrip"
+        ResizeMode="CanResize"
         AllowsTransparency="True"
         Closing="Window_Closing"
         MouseLeftButtonDown="TitleBar_MouseLeftButtonDown"
@@ -248,7 +248,11 @@
             </Setter>
         </Style>
     </Window.Resources>
-    <Border x:Name="RootBorder" Background="{DynamicResource BgBrush}" CornerRadius="10" ClipToBounds="True" Loaded="RootBorder_Loaded">
+    <Border x:Name="ShadowHost" CornerRadius="10" Margin="16">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="20" ShadowDepth="2" Color="#000000" Opacity="0.4"/>
+        </Border.Effect>
+        <Border x:Name="RootBorder" Background="{DynamicResource BgBrush}" CornerRadius="10" ClipToBounds="True" Loaded="RootBorder_Loaded">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="44"/>
@@ -818,6 +822,19 @@
                 <TextBlock x:Name="StatusQuality" Text="&#x538B;&#x7F29;&#x8D28;&#x91CF; 70%" FontSize="11" Foreground="{DynamicResource Text3Brush}" FontFamily="Consolas" Margin="16,0,0,0"/>
             </StackPanel>
         </Border>
+        <!-- Resize grip -->
+        <Border Grid.Row="3" x:Name="ResizeGrip" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                Width="16" Height="16" Margin="0,0,0,3" Cursor="SizeNWSE"
+                Background="Transparent" MouseDown="ResizeGrip_MouseDown" Panel.ZIndex="10">
+            <Path Data="M5,7 L11,7 M3,9 L13,9 M1,11 L15,11"
+                  Stroke="{DynamicResource Text3Brush}" StrokeThickness="1.5" Opacity="0.35"
+                  Stretch="None" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+                <Path.RenderTransform>
+                    <RotateTransform Angle="135" CenterX="8" CenterY="9"/>
+                </Path.RenderTransform>
+            </Path>
+        </Border>
     </Grid>
+    </Border>
     </Border>
 </Window>

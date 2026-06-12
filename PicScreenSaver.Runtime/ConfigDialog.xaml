@@ -109,7 +109,7 @@
     </Window.Resources>
     <Border x:Name="ShadowHost" CornerRadius="10" Margin="16">
         <Border.Effect>
-            <DropShadowEffect BlurRadius="20" ShadowDepth="2" Color="#000000" Opacity="0.4"/>
+            <DropShadowEffect BlurRadius="20" ShadowDepth="2" Color="#000000" Opacity="0.16"/>
         </Border.Effect>
         <Border x:Name="RootBorder" Background="#F0F1F5" CornerRadius="10" ClipToBounds="True" Loaded="RootBorder_Loaded">
         <Grid>

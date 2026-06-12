@@ -8,8 +8,11 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Media.Effects;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
+using System.Runtime.InteropServices;
+using System.Windows.Interop;
 using Microsoft.Win32;
 using PicScreenSaver.Maker.Models;
 using PicScreenSaver.Maker.Services;
@@ -1630,6 +1633,19 @@ namespace PicScreenSaver.Maker
                     new Rect(0, 0, RootBorder.ActualWidth, RootBorder.ActualHeight), 10, 10);
         }
 
+        [DllImport("user32.dll")]
+        private static extern int SendMessage(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);
+
+        private void ResizeGrip_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left)
+            {
+                var hwnd = new WindowInteropHelper(this).Handle;
+                SendMessage(hwnd, 0x0112, (IntPtr)0xF008, IntPtr.Zero); // WM_SYSCOMMAND, SC_SIZE + 8 = bottom-right
+                e.Handled = true;
+            }
+        }
+
         private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ClickCount == 2) MaximizeBtn_Click(sender, e);
@@ -1693,6 +1709,21 @@ namespace PicScreenSaver.Maker
             string themeFile = _isDarkTheme ? "Themes/Dark.xaml" : "Themes/Light.xaml";
             Application.Current.Resources.MergedDictionaries[0] =
                 new ResourceDictionary { Source = new Uri("pack://application:,,,/" + themeFile, UriKind.Absolute) };
+
+            // 切换阴影颜色适配主题
+            if (ShadowHost?.Effect is DropShadowEffect shadow)
+            {
+                if (_isDarkTheme)
+                {
+                    shadow.Color = Colors.White;
+                    shadow.Opacity = 0.15;
+                }
+                else
+                {
+                    shadow.Color = Colors.Black;
+                    shadow.Opacity = 0.4;
+                }
+            }
 
             RefreshImageGrid();
             UpdateSliderButtons();
